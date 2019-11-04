@@ -41,7 +41,7 @@ defmodule Retex do
     %{graph: graph} = rete
 
     {rete, bindings} =
-      Graph.Reducers.Dfs.reduce(graph, {rete, bindings}, fn vertex, {network, bindings} ->
+      Graph.Reducers.Bfs.reduce(graph, {rete, bindings}, fn vertex, {network, bindings} ->
         propagate_activation(vertex, network, wme, bindings)
       end)
 
