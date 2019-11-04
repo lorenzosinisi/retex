@@ -53,12 +53,36 @@ defmodule Retex do
   end
 
   def add_production(%{graph: graph} = network, %{given: given, then: action}) do
+    given = compile_given(%{}, given)
+
     {graph, alphas} =
       given |> Enum.reverse() |> Enum.reduce({graph, []}, &build_alpha_network(&1, &2))
 
     {beta_memory, graph} = build_beta_network(graph, alphas)
     graph = add_p_node(graph, beta_memory, action)
     %{network | graph: graph}
+  end
+
+  def compile_given(acc, []), do: []
+
+  def compile_given(acc, conditions) do
+    {_, new_conditions} =
+      Enum.reduce(conditions, {acc, []}, fn condition, {acc, conds} ->
+        case condition do
+          %Fact.Isa{type: type, variable: variable} = condition ->
+            acc = Map.put_new(acc, variable, type)
+            {acc, [condition | conds]}
+
+          %Fact.HasAttribute{owner: "$" <> variable_name = var} = condition ->
+            type = Map.get(acc, var) || raise("#{var} is not defined")
+            {acc, [%{condition | owner: type} | conds]}
+
+          condition ->
+            {acc, [condition | conds]}
+        end
+      end)
+
+    new_conditions
   end
 
   def build_beta_network(graph, disjoint_beta_network) do
