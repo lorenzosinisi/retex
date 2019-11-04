@@ -2,7 +2,7 @@
 
 **Work in progress Rete Algorithm implementation in Elixir**
 
-Rete is a complex stateful algorithm, this is an attemp of reproducing it with a functional immutable language
+Rete is a complex stateful algorithm, this is an attempt of reproducing it with a functional immutable language
 such as Elixir/Erlang.
 
 ## Concepts
