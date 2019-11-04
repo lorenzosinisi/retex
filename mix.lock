@@ -1,0 +1,5 @@
+%{
+  "graphvix": {:hex, :graphvix, "1.0.0", "e1c2e8f2950c0ff43e64f1d3788d095ed7481b29cccaf63f80b2fdf751c6cdd3", [:mix], [], "hexpm"},
+  "libgraph": {:hex, :libgraph, "0.13.3", "20732b7bafb933dcf7351c479e03076ebd14a85fd3202c67a1c197f4f7c2466b", [:mix], [], "hexpm"},
+  "uuid_tools": {:hex, :uuid_tools, "0.1.1", "e94e05551dcfd085a127c11112b0e6d24a98963659bf2f16615745c492e00e38", [:mix], [], "hexpm"},
+}
