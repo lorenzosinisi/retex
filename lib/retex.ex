@@ -4,7 +4,7 @@ defmodule Retex do
 
   defstruct graph: Graph.new(),
             wmes: %{},
-            agenda: %{},
+            agenda: [],
             activations: %{},
             wme_activations: %{},
             bindings: %{}
@@ -19,7 +19,8 @@ defmodule Retex do
 
   def add_wme(%Retex{} = network, %Retex.Wme{} = wme) do
     network = %{network | wmes: Map.put(network.wmes, wme.id, wme)}
-    propagate_activations(network, root_vertex(), wme, network.bindings)
+    {network, bindings} = propagate_activations(network, root_vertex(), wme, network.bindings)
+    %{network | bindings: Map.merge(network.bindings, bindings)}
   end
 
   def get_current_bindings(neighbor, bindings) do
@@ -30,22 +31,36 @@ defmodule Retex do
     Map.get(current_bindings, key, value)
   end
 
-  def update_bindings(current_bindings, bindings, %type{} = neighbor, key, value) do
-    new_bindings = current_bindings |> Map.put_new(key, value)
+  def compile_given(acc, []), do: []
 
-    Map.put(bindings, neighbor.id, new_bindings)
-    |> Map.put("#{neighbor.id}:#{inspect(type)}:#{inspect(neighbor.class)}", new_bindings)
-  end
+  def compile_given(acc, conditions) do
+    {_, new_conditions} =
+      Enum.reduce(conditions, {acc, []}, fn condition, {acc, conds} ->
+        case condition do
+          %Fact.Isa{type: type, variable: variable} = condition ->
+            acc = Map.put_new(acc, variable, type)
+            {acc, [condition | conds]}
 
-  def propagate_activations(%Retex{} = rete, current_node, %Retex.Wme{} = wme, bindings) do
-    %{graph: graph} = rete
+          %Fact.HasAttribute{owner: "$" <> variable_name = var} = condition ->
+            type = Map.get(acc, var) || raise("#{var} is not defined")
+            {acc, [%{condition | owner: type} | conds]}
 
-    {rete, bindings} =
-      Graph.Reducers.Bfs.reduce(graph, {rete, bindings}, fn vertex, {network, bindings} ->
-        propagate_activation(vertex, network, wme, bindings)
+          condition ->
+            {acc, [condition | conds]}
+        end
       end)
 
-    %{rete | bindings: bindings}
+    new_conditions
+  end
+
+  def update_bindings(current_bindings, bindings, %_{} = neighbor, %{} = map) do
+    new_bindings = current_bindings |> Map.merge(map)
+    Map.put(bindings, neighbor.id, new_bindings)
+  end
+
+  def update_bindings(current_bindings, bindings, %type{} = neighbor, key, value) do
+    new_bindings = current_bindings |> Map.put_new(key, value)
+    Map.put(bindings, neighbor.id, new_bindings)
   end
 
   defp propagate_activation(neighbor, rete, wme, bindings) do
@@ -53,6 +68,8 @@ defmodule Retex do
   end
 
   def add_production(%{graph: graph} = network, %{given: given, then: action}) do
+    given = compile_given(%{}, given)
+
     {graph, alphas} =
       given |> Enum.reverse() |> Enum.reduce({graph, []}, &build_alpha_network(&1, &2))
 
@@ -165,5 +182,31 @@ defmodule Retex do
       Map.put(wme_activations, wme.id, [current_node.id | previous_wme_activations])
 
     %{new_rete | wme_activations: new_wme_activations}
+  end
+
+  def propagate_activations(%Retex{} = rete, current_node, %Retex.Wme{} = wme, bindings) do
+    %{graph: graph} = rete
+
+    children = Graph.out_neighbors(graph, current_node)
+
+    IO.inspect("Reducing nr #{Enum.count(children)} vertices now")
+
+    Enum.reduce(children, {rete, bindings}, fn vertex, {network, bindings} ->
+      propagate_activation(vertex, network, wme, bindings)
+    end)
+  end
+
+  def continue_traversal(
+        %Retex{} = new_rete,
+        %{} = new_bindings,
+        %_{} = current_node,
+        %Retex.Wme{} = wme
+      ) do
+    {new_rete, new_bindings}
+    propagate_activations(new_rete, current_node, wme, new_bindings)
+  end
+
+  def stop_traversal(%Retex{} = rete, %{} = bindings) do
+    {rete, bindings}
   end
 end

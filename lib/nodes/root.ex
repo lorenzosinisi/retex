@@ -12,10 +12,10 @@ defmodule Retex.Root do
     def activate(
           %Retex.Root{} = neighbor,
           %Retex{graph: _graph} = rete,
-          %Retex.Wme{attribute: _attribute} = _wme,
+          %Retex.Wme{attribute: _attribute} = wme,
           bindings
         ) do
-      {:next, {rete, bindings}}
+      Retex.continue_traversal(rete, bindings, neighbor, wme)
     end
   end
 end

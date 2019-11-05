@@ -24,9 +24,8 @@ defmodule Benchmark do
 
   defp rule(n, type \\ :Thing) do
     given = [
-      isa(type, "$Account_#{n}"),
-      has_attribute(type, :status, :==, "$a_#{n}"),
-      has_attribute(type, :premium, :==, true)
+      has_attribute(:Thing, :status, :==, "$a_#{n}"),
+      has_attribute(:Thing, :premium, :==, true)
     ]
 
     action = [
@@ -47,7 +46,18 @@ defmodule Benchmark do
         Retex.add_production(network, rule(n))
       end)
 
-    network = Retex.add_production(rules_100_000, rule(1, :Account))
+    given_matching = [
+      has_attribute(:Account, :status, :==, "$account"),
+      has_attribute(:Account, :premium, :==, true)
+    ]
+
+    action_2 = [
+      {"$thing", :account_status, "$account"}
+    ]
+
+    rule = create_rule(lhs: given_matching, rhs: action_2)
+    network = Retex.add_production(rules_100_000, rule)
+
     IO.inspect("Add wmes")
 
     network =
@@ -57,13 +67,7 @@ defmodule Benchmark do
       |> Retex.add_wme(wme_3)
 
     IO.inspect("Done adding wme")
-    agenda = network.agenda
-
-    agenda = %{
-      "a9b34041bb1983d6c1ed33fc383ecd85b00b886c1b3be49ef01a9683237aa001" => [
-        {:Account, :account_status, :silver}
-      ]
-    }
+    IO.inspect(agenda: network.agenda)
   end
 end
 

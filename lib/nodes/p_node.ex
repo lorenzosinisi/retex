@@ -25,9 +25,9 @@ defmodule Retex.Node.PNode do
       if all_activate? do
         pnode = Retex.replace_bindings(neighbor, bindings)
         new_rete = %{rete | agenda: [pnode.action | rete.agenda]}
-        {:next, {new_rete, bindings}}
+        Retex.stop_traversal(new_rete, bindings)
       else
-        {:skip, {rete, bindings}}
+        Retex.stop_traversal(rete, bindings)
       end
     end
   end

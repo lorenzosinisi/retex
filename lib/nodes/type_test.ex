@@ -24,13 +24,11 @@ defmodule Retex.Node.Test do
       if previous_match === value do
         new_bindings = Retex.update_bindings(current_bindings, bindings, neighbor, key, value)
 
-        new_rete =
-          rete
-          |> Retex.create_activation(neighbor, wme)
-
-        {:next, {new_rete, new_bindings}}
+        rete
+        |> Retex.create_activation(neighbor, wme)
+        |> Retex.continue_traversal(new_bindings, neighbor, wme)
       else
-        {:skip, {rete, bindings}}
+        rete |> Retex.stop_traversal(bindings)
       end
     end
 
@@ -41,13 +39,11 @@ defmodule Retex.Node.Test do
           bindings
         ) do
       if apply(Kernel, operator, [value, wme.value]) do
-        new_rete =
-          rete
-          |> Retex.create_activation(neighbor, wme)
-
-        {:next, {new_rete, bindings}}
+        rete
+        |> Retex.create_activation(neighbor, wme)
+        |> Retex.continue_traversal(bindings, neighbor, wme)
       else
-        {:skip, {rete, bindings}}
+        rete |> Retex.stop_traversal(bindings)
       end
     end
   end

@@ -26,10 +26,11 @@ defmodule Retex.Node.Select do
       if previous_match == value do
         new_bindings = Retex.update_bindings(current_bindings, bindings, neighbor, key, value)
 
-        new_rete = rete |> Retex.create_activation(neighbor, wme)
-        {:next, {new_rete, new_bindings}}
+        rete
+        |> Retex.create_activation(neighbor, wme)
+        |> Retex.continue_traversal(new_bindings, neighbor, wme)
       else
-        {:next, {rete, bindings}}
+        Retex.stop_traversal(rete, bindings)
       end
     end
 
@@ -39,11 +40,9 @@ defmodule Retex.Node.Select do
           %Retex.Wme{attribute: attribute} = wme,
           bindings
         ) do
-      new_rete =
-        rete
-        |> Retex.create_activation(neighbor, wme)
-
-      {:next, {new_rete, bindings}}
+      rete
+      |> Retex.create_activation(neighbor, wme)
+      |> Retex.continue_traversal(bindings, neighbor, wme)
     end
 
     def activate(
@@ -52,7 +51,7 @@ defmodule Retex.Node.Select do
           %Retex.Wme{attribute: _attribute},
           bindings
         ) do
-      {:next, {rete, bindings}}
+      Retex.stop_traversal(rete, bindings)
     end
   end
 end
