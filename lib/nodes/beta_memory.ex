@@ -28,20 +28,12 @@ defmodule Retex.Node.BetaMemory do
            true <- variables_match(left_vars, right_vars) do
         current_bindings = Retex.get_current_bindings(neighbor, bindings)
         already_active? = Map.get(activations, neighbor.id)
+        inherited_vars = Map.merge(left_vars, right_vars)
+        new_bindings = Retex.update_bindings(current_bindings, bindings, neighbor, inherited_vars)
 
         if already_active? do
-          inherited_vars = Map.merge(left_vars, right_vars)
-
-          new_bindings =
-            Retex.update_bindings(current_bindings, bindings, neighbor, inherited_vars)
-
           rete |> Retex.stop_traversal(new_bindings)
         else
-          inherited_vars = Map.merge(left_vars, right_vars)
-
-          new_bindings =
-            Retex.update_bindings(current_bindings, bindings, neighbor, inherited_vars)
-
           rete
           |> Retex.create_activation(neighbor, wme)
           |> Retex.continue_traversal(new_bindings, neighbor, wme)
