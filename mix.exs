@@ -22,7 +22,8 @@ defmodule Retex.MixProject do
   defp deps do
     [
       {:libgraph, "~> 0.7"},
-      {:uuid_tools, "~> 0.1.0"}
+      {:uuid_tools, "~> 0.1.0"},
+      {:duration_tc, "~> 0.1.1", only: :dev}
     ]
   end
 end

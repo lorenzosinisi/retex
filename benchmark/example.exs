@@ -40,11 +40,22 @@ defmodule Benchmark do
     wme_2 = Retex.Wme.new(:Account, :premium, true)
     wme_3 = Retex.Wme.new(:Family, :size, 10)
 
-    rules_100_000 =
-      Enum.reduce(1..100_000, Retex.new(), fn n, network ->
-        IO.inspect("Adding rule nr #{n}")
-        Retex.add_production(network, rule(n))
+    number_of_rules = 100_000
+
+    require Logger
+
+    Logger.info("Adding #{number_of_rules} rules...")
+
+    result =
+      Timer.tc(fn ->
+        Enum.reduce(1..number_of_rules, Retex.new(), fn n, network ->
+          Retex.add_production(network, rule(n))
+        end)
       end)
+
+    duration = result[:humanized_duration]
+    rules_100_000 = result[:reply]
+    Logger.info("Adding #{number_of_rules} rules took #{duration}")
 
     given_matching = [
       has_attribute(:Account, :status, :==, "$account"),
@@ -58,15 +69,20 @@ defmodule Benchmark do
     rule = create_rule(lhs: given_matching, rhs: action_2)
     network = Retex.add_production(rules_100_000, rule)
 
-    IO.inspect("Add wmes")
+    Logger.info("Network info #{Graph.info(rules_100_000.graph) |> inspect()}")
 
-    network =
-      network
-      |> Retex.add_wme(wme)
-      |> Retex.add_wme(wme_2)
-      |> Retex.add_wme(wme_3)
+    result =
+      Timer.tc(fn ->
+        network
+        |> Retex.add_wme(wme)
+        |> Retex.add_wme(wme_2)
+        |> Retex.add_wme(wme_3)
+      end)
 
-    IO.inspect("Done adding wme")
+    duration = result[:humanized_duration]
+    network = result[:reply]
+
+    Logger.info("Adding 3 working memories took #{duration}")
     IO.inspect(agenda: network.agenda)
   end
 end
