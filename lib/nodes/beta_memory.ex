@@ -21,24 +21,22 @@ defmodule Retex.Node.BetaMemory do
           wme,
           bindings
         ) do
-      left? = Map.get(activations, neighbor.left.id)
-      right? = left? && Map.get(activations, neighbor.right.id)
-      left_vars = left? && Retex.get_current_bindings(neighbor.left, bindings)
-      right_vars = right? && Retex.get_current_bindings(neighbor.right, bindings)
-      current_bindings = right? && Retex.get_current_bindings(neighbor, bindings)
-      already_active? = left? && right? && Map.get(activations, neighbor.id)
+      with [_ | _] <- Map.get(activations, neighbor.left.id),
+           [_ | _] <- Map.get(activations, neighbor.right.id),
+           left_vars <- Retex.get_current_bindings(neighbor.left, bindings),
+           right_vars <- Retex.get_current_bindings(neighbor.right, bindings),
+           true <- variables_match(left_vars, right_vars) do
+        current_bindings = Retex.get_current_bindings(neighbor, bindings)
+        already_active? = Map.get(activations, neighbor.id)
 
-      matching =
-        left? && right? &&
-          Enum.reduce_while(left_vars, true, fn {key, value}, true ->
-            if Map.get(right_vars, key, value) == value, do: {:cont, true}, else: {:halt, false}
-          end) &&
-          Enum.reduce_while(right_vars, true, fn {key, value}, true ->
-            if Map.get(left_vars, key, value) == value, do: {:cont, true}, else: {:halt, false}
-          end)
+        if already_active? do
+          inherited_vars = Map.merge(left_vars, right_vars)
 
-      cond do
-        matching && !already_active? ->
+          new_bindings =
+            Retex.update_bindings(current_bindings, bindings, neighbor, inherited_vars)
+
+          rete |> Retex.stop_traversal(new_bindings)
+        else
           inherited_vars = Map.merge(left_vars, right_vars)
 
           new_bindings =
@@ -47,18 +45,20 @@ defmodule Retex.Node.BetaMemory do
           rete
           |> Retex.create_activation(neighbor, wme)
           |> Retex.continue_traversal(new_bindings, neighbor, wme)
-
-        matching && already_active? ->
-          inherited_vars = Map.merge(left_vars, right_vars)
-
-          new_bindings =
-            Retex.update_bindings(current_bindings, bindings, neighbor, inherited_vars)
-
-          rete |> Retex.stop_traversal(new_bindings)
-
-        true ->
+        end
+      else
+        _ ->
           Retex.stop_traversal(rete, bindings)
       end
+    end
+
+    defp variables_match(left, right) do
+      Enum.reduce_while(left, true, fn {key, value}, true ->
+        if Map.get(right, key, value) == value, do: {:cont, true}, else: {:halt, false}
+      end) &&
+        Enum.reduce_while(right, true, fn {key, value}, true ->
+          if Map.get(left, key, value) == value, do: {:cont, true}, else: {:halt, false}
+        end)
     end
   end
 end
