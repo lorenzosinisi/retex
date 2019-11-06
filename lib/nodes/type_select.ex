@@ -4,10 +4,10 @@ defmodule Retex.Node.Select do
   right owner from above, they will be activated and pass the tokens down in the test
   nodes (that will check for their value instead).
   """
-  defstruct type: :NodeSelect, class: nil, id: nil, bindings: %{}
+  defstruct type: :NodeSelect, class: nil, id: nil, bindings: %{}, parent: nil
 
-  def new(class, labels \\ []) do
-    item = %__MODULE__{class: class}
+  def new(parent, class, labels \\ []) do
+    item = %__MODULE__{class: class, parent: parent}
     {%{item | id: Retex.hash(item)}, labels}
   end
 

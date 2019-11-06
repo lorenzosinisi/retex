@@ -27,8 +27,9 @@ defmodule Retex.Node.BetaMemory do
       right_vars = Retex.get_current_bindings(neighbor.right, bindings)
       inherited_vars = Map.merge(left_vars, right_vars)
       current_bindings = Retex.get_current_bindings(neighbor, bindings)
+      not_yet_active? = Map.get(activations, neighbor.id)
 
-      match? =
+      matching =
         Enum.reduce_while(left_vars, true, fn {key, value}, true ->
           if Map.get(right_vars, key, value) == value, do: {:cont, true}, else: {:halt, false}
         end) &&
@@ -36,15 +37,13 @@ defmodule Retex.Node.BetaMemory do
             if Map.get(left_vars, key, value) == value, do: {:cont, true}, else: {:halt, false}
           end)
 
-      if left? && right? && match? do
-        Logger.warn("is activated")
+      if left? && right? && matching && !not_yet_active? do
         new_bindings = Retex.update_bindings(current_bindings, bindings, neighbor, inherited_vars)
 
         rete
         |> Retex.create_activation(neighbor, wme)
         |> Retex.continue_traversal(new_bindings, neighbor, wme)
       else
-        Logger.warn("is not activated")
         rete |> Retex.stop_traversal(bindings)
       end
     end

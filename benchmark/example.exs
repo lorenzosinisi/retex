@@ -41,7 +41,7 @@ defmodule Benchmark do
     wme_3 = Retex.Wme.new(:Family, :size, 10)
 
     rules_100_000 =
-      Enum.reduce(1..10_000, Retex.new(), fn n, network ->
+      Enum.reduce(1..100_000, Retex.new(), fn n, network ->
         IO.inspect("Adding rule nr #{n}")
         Retex.add_production(network, rule(n))
       end)

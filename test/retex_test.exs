@@ -164,11 +164,7 @@ defmodule RetexTest do
         |> Retex.add_wme(wme_2)
         |> Retex.add_wme(wme_3)
 
-      assert network.agenda == [
-               [{:Account, :account_status, :silver}],
-               [{:Account, :account_status, :silver}],
-               [{:Account, :account_status, :silver}]
-             ]
+      assert network.agenda == [[{"$thing", :account_status, :silver}]]
     end
 
     test "apply inference with rules in which all elements are variables" do
@@ -195,7 +191,7 @@ defmodule RetexTest do
         |> Retex.add_wme(wme_2)
         |> Retex.add_wme(wme_3)
 
-      assert network.agenda == [[{:Account, :account_status, :silver}]]
+      assert network.agenda == [[{"$thing", :account_status, :silver}]]
     end
 
     test "apply inference with the use of variables as types" do
@@ -223,7 +219,7 @@ defmodule RetexTest do
         |> Retex.add_wme(wme_2)
         |> Retex.add_wme(wme_3)
 
-      assert network.agenda == [[{:Account, :account_status, :silver}]]
+      assert network.agenda == [[{"$thing", :account_status, :silver}]]
     end
 
     test "apply inference with the use of variables and they DONT match" do

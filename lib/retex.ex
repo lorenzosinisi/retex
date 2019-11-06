@@ -117,7 +117,7 @@ defmodule Retex do
     %{attribute: attribute, owner: class, predicate: predicate, value: value} = condition
     condition_id = hash(condition)
     {type_node, _} = Node.Type.new(class)
-    {select_node, _} = Node.Select.new(attribute)
+    {select_node, _} = Node.Select.new(class, attribute)
     {test_node, _} = Node.Test.new([predicate, value], condition_id)
 
     new_graph =
@@ -184,12 +184,10 @@ defmodule Retex do
     %{new_rete | wme_activations: new_wme_activations}
   end
 
-  def propagate_activations(%Retex{} = rete, current_node, %Retex.Wme{} = wme, bindings) do
+  def propagate_activations(%Retex{} = rete, %type{} = current_node, %Retex.Wme{} = wme, bindings) do
     %{graph: graph} = rete
 
     children = Graph.out_neighbors(graph, current_node)
-
-    IO.inspect("Reducing nr #{Enum.count(children)} vertices now")
 
     Enum.reduce(children, {rete, bindings}, fn vertex, {network, bindings} ->
       propagate_activation(vertex, network, wme, bindings)
