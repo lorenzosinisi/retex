@@ -40,6 +40,9 @@ defmodule Benchmark do
     wme_2 = Retex.Wme.new(:Account, :premium, true)
     wme_3 = Retex.Wme.new(:Family, :size, 10)
 
+    wme_4 = Retex.Wme.new(:Account, :status, :silver)
+    wme_5 = Retex.Wme.new(:AccountC, :status, :silver)
+    wme_5 = Retex.Wme.new(:AccountD, :status, :silver)
     number_of_rules = 100_000
 
     require Logger
@@ -77,12 +80,17 @@ defmodule Benchmark do
         |> Retex.add_wme(wme)
         |> Retex.add_wme(wme_2)
         |> Retex.add_wme(wme_3)
+        |> Retex.add_wme(wme_4)
+        |> Retex.add_wme(wme_5)
       end)
 
     duration = result[:humanized_duration]
     network = result[:reply]
 
-    Logger.info("Adding 3 working memories took #{duration}")
+    Logger.info(
+      "Adding 6 working memories took #{duration} and matched #{Enum.count(network.agenda)} rules"
+    )
+
     IO.inspect(agenda: network.agenda)
   end
 end

@@ -22,6 +22,22 @@ using the `Activation` protocol. Each type of node implements its own protocol f
 - Add tests for variables of the same name in different rules (it should work, right now it isnt)
 - Improve performances and extend the facts to handle more complex cases such as relationships between WMEs
 
+# Benchmark/Example
+
+clone the project and run `mix run benchmark/example.exs --no-mix-exs`
+
+The example adds 100_000 conditions and only one triggers a new inference with 6 working memory elements
+
+You will see something like the following:
+
+```
+13:36:55.036 [info]  Adding 100000 rules took 42 seconds, 508.98 milliseconds
+
+13:36:55.432 [info]  Network info %{num_edges: 400000, num_vertices: 299996, size_in_bytes: 278404360, type: :directed}
+[agenda: [[{"$thing", :account_status, :silver}]]]
+
+13:36:55.439 [info]  Adding 6 working memories took 7.034 milliseconds and matched 1 rule
+```
 
 ## Warnings
 
