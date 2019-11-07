@@ -11,23 +11,13 @@ defmodule Retex.Node.PNode do
   end
 
   defimpl Retex.Protocol.Activation do
-    def activate(
-          neighbor,
-          %Retex{graph: graph, activations: activations, agenda: agenda} = rete,
-          _wme,
-          bindings
-        ) do
-      all_activate? =
-        Enum.all?(Graph.in_neighbors(graph, neighbor), fn vertex ->
-          Map.get(activations, vertex.id)
-        end)
-
-      if all_activate? do
+    def activate(neighbor, %Retex{graph: graph, activations: activations} = rete, _wme, bindings) do
+      with true <- Graph.in_neighbors(graph, neighbor) |> Enum.all?(&Map.get(activations, &1.id)) do
         pnode = Retex.replace_bindings(neighbor, bindings)
         new_rete = %{rete | agenda: [pnode.action | rete.agenda]}
         Retex.stop_traversal(new_rete, bindings)
       else
-        Retex.stop_traversal(rete, bindings)
+        _ -> Retex.stop_traversal(rete, bindings)
       end
     end
   end
