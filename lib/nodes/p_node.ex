@@ -26,13 +26,14 @@ defmodule Retex.Node.PNode do
         actions =
           for token <- tokens do
             if is_tuple(token) do
-              Retex.replace_bindings(neighbor, token) |> Map.get(:action)
+              Retex.replace_bindings(neighbor, token)
             else
-              Retex.replace_bindings(neighbor, token.bindings) |> Map.get(:action)
+              Retex.replace_bindings(neighbor, token.bindings)
             end
           end
           |> List.flatten()
           |> Enum.uniq()
+          |> Enum.map(fn node -> node.action end)
 
         new_rete = %{
           rete
