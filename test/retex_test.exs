@@ -165,7 +165,6 @@ defmodule RetexTest do
         |> Retex.add_wme(wme_3)
 
       assert network.agenda == [
-               {"$thing", :account_status, :silver},
                {"$thing", :account_status, :silver}
              ]
     end
@@ -195,7 +194,6 @@ defmodule RetexTest do
         |> Retex.add_wme(wme_3)
 
       assert network.agenda == [
-               {"$thing", :account_status, :silver},
                {"$thing", :account_status, :silver}
              ]
     end
@@ -304,6 +302,102 @@ defmodule RetexTest do
              ]
 
       assert network.tokens !== nil
+    end
+
+    test "apply inference with the use of variables with two rules sharing var names and attribute names" do
+      wme = Retex.Wme.new(:Account, :status, :silver)
+      wme_2 = Retex.Wme.new(:Family, :size, 10)
+      wme_4 = Retex.Wme.new(:Account, :status, 10)
+
+      given = [
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Family, :size, :==, 10)
+      ]
+
+      action = [
+        {:Flight, :account_status, "$a"}
+      ]
+
+      rule = create_rule(lhs: given, rhs: action)
+
+      given_2 = [
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Family, :size, :==, "$a")
+      ]
+
+      action_2 = [
+        {:Flight, :account_status_a, "$a"}
+      ]
+
+      rule_2 = create_rule(lhs: given_2, rhs: action_2)
+
+      network =
+        Retex.new()
+        |> Retex.add_production(rule)
+        |> Retex.add_production(rule_2)
+        |> Retex.add_wme(wme)
+        |> Retex.add_wme(wme_2)
+
+      assert network.agenda == [{:Flight, :account_status, :silver}]
+
+      network =
+        network
+        |> Retex.add_wme(wme_4)
+
+      assert network.agenda == [
+               {:Flight, :account_status_a, 10},
+               {:Flight, :account_status, :silver},
+               {:Flight, :account_status, 10}
+             ]
+    end
+
+    test "apply inference with the use of variables with two rules sharing var names" do
+      wme = Retex.Wme.new(:Account, :status, :silver)
+      wme_2 = Retex.Wme.new(:Family, :size, 10)
+      wme_3 = Retex.Wme.new(:Family, :size_a, 10)
+      wme_4 = Retex.Wme.new(:Account, :status_a, 10)
+
+      given = [
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Family, :size, :==, 10),
+        has_attribute(:Account, :status, :!=, 10)
+      ]
+
+      action = [
+        {:Flight, :account_status, "$a"}
+      ]
+
+      rule = create_rule(lhs: given, rhs: action)
+
+      given_2 = [
+        has_attribute(:Account, :status_a, :==, "$a"),
+        has_attribute(:Family, :size_a, :==, "$a")
+      ]
+
+      action_2 = [
+        {:Flight, :account_status_a, "$a"}
+      ]
+
+      rule_2 = create_rule(lhs: given_2, rhs: action_2)
+
+      network =
+        Retex.new()
+        |> Retex.add_production(rule)
+        |> Retex.add_production(rule_2)
+        |> Retex.add_wme(wme)
+        |> Retex.add_wme(wme_2)
+
+      assert network.agenda == [{:Flight, :account_status, :silver}]
+
+      network =
+        network
+        |> Retex.add_wme(wme_3)
+        |> Retex.add_wme(wme_4)
+
+      assert network.agenda == [
+               {:Flight, :account_status_a, 10},
+               {:Flight, :account_status, :silver}
+             ]
     end
 
     test "apply inference with the use of variables" do

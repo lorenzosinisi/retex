@@ -8,7 +8,8 @@ defmodule Retex do
             activations: %{},
             wme_activations: %{},
             tokens: %{},
-            bindings: %{}
+            bindings: %{},
+            pending_activation: []
 
   def root_vertex(), do: Retex.Root.new()
 
@@ -177,6 +178,15 @@ defmodule Retex do
       end)
 
     %{pnode | action: new_actions}
+  end
+
+  def add_token(%Retex{tokens: rete_tokens} = rete, current_node, wme, bindings, [_ | _] = tokens) do
+    node_tokens = Map.get(rete_tokens, current_node.id, [])
+
+    all_tokens = node_tokens ++ tokens
+
+    new_tokens = Map.put(rete_tokens, current_node.id, Enum.uniq(all_tokens))
+    %{rete | tokens: new_tokens}
   end
 
   def add_token(%Retex{tokens: rete_tokens} = rete, current_node, wme, bindings, tokens) do

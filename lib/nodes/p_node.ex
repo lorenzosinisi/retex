@@ -18,8 +18,8 @@ defmodule Retex.Node.PNode do
           bindings,
           _tokens
         ) do
-      parents = Graph.in_neighbors(graph, neighbor)
-      parent = List.first(parents)
+      # A production node has only one parent
+      [parent] = parents = Graph.in_neighbors(graph, neighbor)
       tokens = Map.get(tokens, parent.id)
 
       with true <- Enum.all?(parents, &Map.get(activations, &1.id)) do
@@ -37,12 +37,12 @@ defmodule Retex.Node.PNode do
 
         new_rete = %{
           rete
-          | agenda: [actions | rete.agenda] |> List.flatten()
+          | agenda: ([actions] ++ rete.agenda) |> List.flatten() |> Enum.uniq()
         }
 
-        Retex.stop_traversal(new_rete, bindings)
+        Retex.stop_traversal(new_rete, %{})
       else
-        _ -> Retex.stop_traversal(rete, bindings)
+        _ -> Retex.stop_traversal(rete, %{})
       end
     end
   end

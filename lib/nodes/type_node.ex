@@ -19,20 +19,15 @@ defmodule Retex.Node.Type do
           bindings,
           tokens
         ) do
-      key = var
-      value = identifier
-      current_bindings = Retex.get_current_bindings(neighbor, bindings)
-      new_bindings = Retex.update_bindings(current_bindings, bindings, neighbor, key, value)
-
       rete
       |> Retex.create_activation(neighbor, wme)
-      |> Retex.add_token(neighbor, wme, new_bindings, tokens)
-      |> Retex.continue_traversal(new_bindings, neighbor, wme)
+      |> Retex.add_token(neighbor, wme, Map.merge(bindings, %{var => identifier}), tokens)
+      |> Retex.continue_traversal(Map.merge(bindings, %{var => identifier}), neighbor, wme)
     end
 
     def activate(
           %Retex.Node.Type{class: identifier} = neighbor,
-          %Retex{graph: graph} = rete,
+          %Retex{} = rete,
           %Retex.Wme{identifier: identifier} = wme,
           bindings,
           tokens
@@ -47,10 +42,10 @@ defmodule Retex.Node.Type do
           %Retex.Node.Type{class: _class},
           %Retex{graph: _graph} = rete,
           %Retex.Wme{identifier: _identifier} = _wme,
-          bindings,
-          tokens
+          _bindings,
+          _tokens
         ) do
-      Retex.stop_traversal(rete, bindings)
+      Retex.stop_traversal(rete, %{})
     end
   end
 end

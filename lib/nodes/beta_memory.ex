@@ -7,8 +7,6 @@ defmodule Retex.Node.BetaMemory do
   """
   defstruct type: :BetaMemory, left: nil, right: nil, id: nil, bindings: %{}
 
-  require Logger
-
   def new(left, right, labels \\ []) do
     item = %__MODULE__{left: left, right: right}
     {%{item | id: Retex.hash(item)}, labels}
@@ -34,7 +32,7 @@ defmodule Retex.Node.BetaMemory do
         |> Retex.continue_traversal(bindings, neighbor, wme)
       else
         _ ->
-          Retex.stop_traversal(rete, bindings)
+          Retex.stop_traversal(rete, %{})
       end
     end
 
