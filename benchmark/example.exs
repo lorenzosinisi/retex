@@ -43,7 +43,7 @@ defmodule Benchmark do
     wme_4 = Retex.Wme.new(:Account, :status, :silver)
     wme_5 = Retex.Wme.new(:AccountC, :status, :silver)
     wme_5 = Retex.Wme.new(:AccountD, :status, :silver)
-    number_of_rules = 100_000
+    number_of_rules = 1000
 
     require Logger
 

@@ -15,32 +15,30 @@ defmodule Retex.Node.Test do
           %Retex.Node.Test{class: [_operator, "$" <> _variable = var]} = neighbor,
           %Retex{activations: _activations} = rete,
           %{value: value} = wme,
-          bindings
+          bindings,
+          tokens
         ) do
       key = var
       current_bindings = Retex.get_current_bindings(neighbor, bindings)
-      previous_match = Retex.previous_match(current_bindings, key, value)
+      new_bindings = Retex.update_bindings(current_bindings, bindings, neighbor, key, value)
 
-      if previous_match === value do
-        new_bindings = Retex.update_bindings(current_bindings, bindings, neighbor, key, value)
-
-        rete
-        |> Retex.create_activation(neighbor, wme)
-        |> Retex.continue_traversal(new_bindings, neighbor, wme)
-      else
-        rete |> Retex.stop_traversal(bindings)
-      end
+      rete
+      |> Retex.create_activation(neighbor, wme)
+      |> Retex.add_token(neighbor, wme, new_bindings, tokens)
+      |> Retex.continue_traversal(new_bindings, neighbor, wme)
     end
 
     def activate(
           %Retex.Node.Test{class: [operator, value]} = neighbor,
           %Retex{activations: _activations} = rete,
           wme,
-          bindings
+          bindings,
+          tokens
         ) do
       if apply(Kernel, operator, [value, wme.value]) do
         rete
         |> Retex.create_activation(neighbor, wme)
+        |> Retex.add_token(neighbor, wme, bindings, tokens)
         |> Retex.continue_traversal(bindings, neighbor, wme)
       else
         rete |> Retex.stop_traversal(bindings)

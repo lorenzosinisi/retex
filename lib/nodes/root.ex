@@ -13,7 +13,8 @@ defmodule Retex.Root do
           %Retex.Root{} = neighbor,
           %Retex{graph: _graph} = rete,
           %Retex.Wme{attribute: _attribute} = wme,
-          bindings
+          bindings,
+          _tokens
         ) do
       Retex.continue_traversal(rete, bindings, neighbor, wme)
     end

@@ -16,32 +16,30 @@ defmodule Retex.Node.Select do
           %Retex.Node.Select{class: "$" <> variable = var, id: id} = neighbor,
           %Retex{graph: graph} = rete,
           %Retex.Wme{attribute: attribute} = wme,
-          bindings
+          bindings,
+          tokens
         ) do
       key = var
       value = attribute
       current_bindings = Retex.get_current_bindings(neighbor, bindings)
-      previous_match = Retex.previous_match(current_bindings, key, value)
+      new_bindings = Retex.update_bindings(current_bindings, bindings, neighbor, key, value)
 
-      if previous_match == value do
-        new_bindings = Retex.update_bindings(current_bindings, bindings, neighbor, key, value)
-
-        rete
-        |> Retex.create_activation(neighbor, wme)
-        |> Retex.continue_traversal(new_bindings, neighbor, wme)
-      else
-        Retex.stop_traversal(rete, bindings)
-      end
+      rete
+      |> Retex.create_activation(neighbor, wme)
+      |> Retex.add_token(neighbor, wme, new_bindings, tokens)
+      |> Retex.continue_traversal(new_bindings, neighbor, wme)
     end
 
     def activate(
           %Retex.Node.Select{class: attribute} = neighbor,
           %Retex{} = rete,
           %Retex.Wme{attribute: attribute} = wme,
-          bindings
+          bindings,
+          tokens
         ) do
       rete
       |> Retex.create_activation(neighbor, wme)
+      |> Retex.add_token(neighbor, wme, bindings, tokens)
       |> Retex.continue_traversal(bindings, neighbor, wme)
     end
 
@@ -49,7 +47,8 @@ defmodule Retex.Node.Select do
           %Retex.Node.Select{class: _class} = _neighbor,
           %Retex{} = rete,
           %Retex.Wme{attribute: _attribute},
-          bindings
+          bindings,
+          _tokens
         ) do
       Retex.stop_traversal(rete, bindings)
     end

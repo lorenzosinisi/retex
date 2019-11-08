@@ -11,10 +11,34 @@ defmodule Retex.Node.PNode do
   end
 
   defimpl Retex.Protocol.Activation do
-    def activate(neighbor, %Retex{graph: graph, activations: activations} = rete, _wme, bindings) do
-      with true <- Graph.in_neighbors(graph, neighbor) |> Enum.all?(&Map.get(activations, &1.id)) do
-        pnode = Retex.replace_bindings(neighbor, bindings)
-        new_rete = %{rete | agenda: [pnode.action | rete.agenda]}
+    def activate(
+          neighbor,
+          %Retex{tokens: tokens, graph: graph, activations: activations} = rete,
+          _wme,
+          bindings,
+          _tokens
+        ) do
+      parents = Graph.in_neighbors(graph, neighbor)
+      parent = List.first(parents)
+      tokens = Map.get(tokens, parent.id)
+
+      with true <- Enum.all?(parents, &Map.get(activations, &1.id)) do
+        actions =
+          for token <- tokens do
+            if is_tuple(token) do
+              Retex.replace_bindings(neighbor, token) |> Map.get(:action)
+            else
+              Retex.replace_bindings(neighbor, token.bindings) |> Map.get(:action)
+            end
+          end
+          |> List.flatten()
+          |> Enum.uniq()
+
+        new_rete = %{
+          rete
+          | agenda: [actions | rete.agenda] |> List.flatten()
+        }
+
         Retex.stop_traversal(new_rete, bindings)
       else
         _ -> Retex.stop_traversal(rete, bindings)
