@@ -13,8 +13,8 @@ defmodule Retex.Node.Select do
 
   defimpl Retex.Protocol.Activation do
     def activate(
-          %Retex.Node.Select{class: "$" <> variable = var} = neighbor,
-          %Retex{graph: graph} = rete,
+          %Retex.Node.Select{class: "$" <> _variable = var} = neighbor,
+          %Retex{} = rete,
           %Retex.Wme{attribute: attribute} = wme,
           bindings,
           tokens
@@ -34,8 +34,8 @@ defmodule Retex.Node.Select do
         ) do
       rete
       |> Retex.create_activation(neighbor, wme)
-      |> Retex.add_token(neighbor, wme, %{}, tokens)
-      |> Retex.continue_traversal(%{}, neighbor, wme)
+      |> Retex.add_token(neighbor, wme, bindings, tokens)
+      |> Retex.continue_traversal(bindings, neighbor, wme)
     end
 
     def activate(

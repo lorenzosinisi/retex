@@ -15,7 +15,7 @@ defmodule Retex.Node.PNode do
           neighbor,
           %Retex{tokens: tokens, graph: graph, activations: activations} = rete,
           _wme,
-          bindings,
+          _bindings,
           _tokens
         ) do
       # A production node has only one parent

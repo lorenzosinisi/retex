@@ -25,46 +25,6 @@ defmodule Retex do
     %{network | bindings: Map.merge(network.bindings, bindings)}
   end
 
-  def get_current_bindings(neighbor, bindings) do
-    Map.get(bindings, %{})
-  end
-
-  def previous_match(current_bindings, key, value) do
-    Map.get(current_bindings, key, value)
-  end
-
-  def compile_given(_acc, []), do: []
-
-  def compile_given(acc, conditions) do
-    {_, new_conditions} =
-      Enum.reduce(conditions, {acc, []}, fn condition, {acc, conds} ->
-        case condition do
-          %Fact.Isa{type: type, variable: variable} = condition ->
-            acc = Map.put_new(acc, variable, type)
-            {acc, [condition | conds]}
-
-          %Fact.HasAttribute{owner: "$" <> _variable_name = var} = condition ->
-            type = Map.get(acc, var) || raise("#{var} is not defined")
-            {acc, [%{condition | owner: type} | conds]}
-
-          condition ->
-            {acc, [condition | conds]}
-        end
-      end)
-
-    new_conditions
-  end
-
-  def update_bindings(current_bindings, bindings, %_{} = neighbor, %{} = map) do
-    new_bindings = current_bindings |> Map.merge(map)
-    Map.put(bindings, new_bindings)
-  end
-
-  def update_bindings(current_bindings, bindings, %{} = neighbor, key, value) do
-    new_bindings = current_bindings || %{} |> Map.put_new(key, value)
-    Map.merge(bindings, new_bindings)
-  end
-
   defp propagate_activation(neighbor, rete, wme, bindings, tokens \\ []) do
     Protocol.Activation.activate(neighbor, rete, wme, bindings, tokens)
   end
@@ -180,7 +140,13 @@ defmodule Retex do
     %{pnode | action: new_actions}
   end
 
-  def add_token(%Retex{tokens: rete_tokens} = rete, current_node, wme, bindings, [_ | _] = tokens) do
+  def add_token(
+        %Retex{tokens: rete_tokens} = rete,
+        current_node,
+        _wme,
+        _bindings,
+        [_ | _] = tokens
+      ) do
     node_tokens = Map.get(rete_tokens, current_node.id, [])
 
     all_tokens = node_tokens ++ tokens
@@ -207,8 +173,7 @@ defmodule Retex do
   end
 
   def create_activation(
-        %__MODULE__{tokens: tokens, activations: activations, wme_activations: wme_activations} =
-          rete,
+        %__MODULE__{activations: activations, wme_activations: wme_activations} = rete,
         current_node,
         wme
       ) do
@@ -224,7 +189,7 @@ defmodule Retex do
   end
 
   def propagate_activations(
-        %Retex{tokens: tokens} = rete,
+        %Retex{} = rete,
         %{} = current_node,
         %Retex.Wme{} = wme,
         bindings,
@@ -239,7 +204,7 @@ defmodule Retex do
   end
 
   def propagate_activations(
-        %Retex{tokens: tokens} = rete,
+        %Retex{} = rete,
         %{} = current_node,
         %Retex.Wme{} = wme,
         bindings
@@ -275,5 +240,27 @@ defmodule Retex do
 
   def stop_traversal(%Retex{} = rete, %{} = bindings) do
     {rete, bindings}
+  end
+
+  defp compile_given(_acc, []), do: []
+
+  defp compile_given(acc, conditions) do
+    {_, new_conditions} =
+      Enum.reduce(conditions, {acc, []}, fn condition, {acc, conds} ->
+        case condition do
+          %Fact.Isa{type: type, variable: variable} = condition ->
+            acc = Map.put_new(acc, variable, type)
+            {acc, [condition | conds]}
+
+          %Fact.HasAttribute{owner: "$" <> _variable_name = var} = condition ->
+            type = Map.get(acc, var) || raise("#{var} is not defined")
+            {acc, [%{condition | owner: type} | conds]}
+
+          condition ->
+            {acc, [condition | conds]}
+        end
+      end)
+
+    new_conditions
   end
 end
