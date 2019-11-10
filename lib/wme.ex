@@ -4,7 +4,7 @@ defmodule Retex.Wme do
     timestamp is set at time of insertion into retex
   """
 
-  defstruct identifier: nil, attribute: nil, value: nil, id: nil, timesptamp: nil
+  defstruct identifier: nil, attribute: nil, value: nil, id: nil, timestamp: nil
 
   def new(id, attr, val) do
     item = %__MODULE__{identifier: id, attribute: attr, value: val}
