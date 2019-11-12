@@ -1,13 +1,15 @@
 defmodule Retex do
   @moduledoc false
-  alias Retex.{Node, Protocol, Fact}
+  alias Retex.{Node, Protocol, Fact, Token}
 
   defstruct graph: Graph.new(),
             wmes: %{},
             agenda: [],
             activations: %{},
             wme_activations: %{},
-            bindings: %{}
+            tokens: %{},
+            bindings: %{},
+            pending_activation: []
 
   def root_vertex(), do: Retex.Root.new()
 
@@ -23,48 +25,8 @@ defmodule Retex do
     %{network | bindings: Map.merge(network.bindings, bindings)}
   end
 
-  def get_current_bindings(neighbor, bindings) do
-    Map.get(bindings, neighbor.id, %{})
-  end
-
-  def previous_match(current_bindings, key, value) do
-    Map.get(current_bindings, key, value)
-  end
-
-  def compile_given(acc, []), do: []
-
-  def compile_given(acc, conditions) do
-    {_, new_conditions} =
-      Enum.reduce(conditions, {acc, []}, fn condition, {acc, conds} ->
-        case condition do
-          %Fact.Isa{type: type, variable: variable} = condition ->
-            acc = Map.put_new(acc, variable, type)
-            {acc, [condition | conds]}
-
-          %Fact.HasAttribute{owner: "$" <> variable_name = var} = condition ->
-            type = Map.get(acc, var) || raise("#{var} is not defined")
-            {acc, [%{condition | owner: type} | conds]}
-
-          condition ->
-            {acc, [condition | conds]}
-        end
-      end)
-
-    new_conditions
-  end
-
-  def update_bindings(current_bindings, bindings, %_{} = neighbor, %{} = map) do
-    new_bindings = current_bindings |> Map.merge(map)
-    Map.put(bindings, neighbor.id, new_bindings)
-  end
-
-  def update_bindings(current_bindings, bindings, %type{} = neighbor, key, value) do
-    new_bindings = current_bindings |> Map.put_new(key, value)
-    Map.put(bindings, neighbor.id, new_bindings)
-  end
-
-  defp propagate_activation(neighbor, rete, wme, bindings) do
-    Protocol.Activation.activate(neighbor, rete, wme, bindings)
+  defp propagate_activation(neighbor, rete, wme, bindings, tokens \\ []) do
+    Protocol.Activation.activate(neighbor, rete, wme, bindings, tokens)
   end
 
   def add_production(%{graph: graph} = network, %{given: given, then: action}) do
@@ -102,7 +64,7 @@ defmodule Retex do
   end
 
   def build_alpha_network(%Fact.Isa{} = condition, {graph, test_nodes}) do
-    %{variable: variable, type: type} = condition
+    %{variable: _, type: type} = condition
     {type_node, _} = Node.Type.new(type)
 
     new_graph =
@@ -144,18 +106,15 @@ defmodule Retex do
     network
   end
 
+  def hash(:uuid4), do: UUIDTools.uuid4()
+
   def hash(data) do
     :crypto.hash(:sha256, inspect(data))
     |> Base.encode16()
     |> String.downcase()
   end
 
-  def replace_bindings(%_{action: actions} = pnode, bindings) do
-    bindings =
-      Enum.reduce(Map.values(bindings), %{}, fn current_bindinds, acc ->
-        Map.merge(acc, current_bindinds)
-      end)
-
+  def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
     new_actions =
       Enum.map(actions, fn action ->
         List.to_tuple(
@@ -166,6 +125,51 @@ defmodule Retex do
       end)
 
     %{pnode | action: new_actions}
+  end
+
+  def replace_bindings(%_{action: actions} = pnode, {_, _, bindings}) when is_map(bindings) do
+    new_actions =
+      Enum.map(actions, fn action ->
+        List.to_tuple(
+          for element <- Tuple.to_list(action) do
+            if is_binary(element), do: Map.get(bindings, element, element), else: element
+          end
+        )
+      end)
+
+    %{pnode | action: new_actions}
+  end
+
+  def add_token(
+        %Retex{tokens: rete_tokens} = rete,
+        current_node,
+        _wme,
+        _bindings,
+        [_ | _] = tokens
+      ) do
+    node_tokens = Map.get(rete_tokens, current_node.id, [])
+
+    all_tokens = node_tokens ++ tokens
+
+    new_tokens = Map.put(rete_tokens, current_node.id, Enum.uniq(all_tokens))
+    %{rete | tokens: new_tokens}
+  end
+
+  def add_token(%Retex{tokens: rete_tokens} = rete, current_node, wme, bindings, tokens) do
+    node_tokens = Map.get(rete_tokens, current_node.id, [])
+    token = Token.new()
+
+    token = %{
+      token
+      | wmem: wme,
+        node: current_node.id,
+        bindings: bindings
+    }
+
+    all_tokens = [token] ++ node_tokens ++ tokens
+
+    new_tokens = Map.put(rete_tokens, current_node.id, Enum.uniq(all_tokens))
+    %{rete | tokens: new_tokens}
   end
 
   def create_activation(
@@ -184,14 +188,44 @@ defmodule Retex do
     %{new_rete | wme_activations: new_wme_activations}
   end
 
-  def propagate_activations(%Retex{} = rete, %type{} = current_node, %Retex.Wme{} = wme, bindings) do
+  def propagate_activations(
+        %Retex{} = rete,
+        %{} = current_node,
+        %Retex.Wme{} = wme,
+        bindings,
+        new_tokens
+      ) do
     %{graph: graph} = rete
+    children = Graph.out_neighbors(graph, current_node)
 
+    Enum.reduce(children, {rete, bindings}, fn vertex, {network, bindings} ->
+      propagate_activation(vertex, network, wme, bindings, new_tokens)
+    end)
+  end
+
+  def propagate_activations(
+        %Retex{} = rete,
+        %{} = current_node,
+        %Retex.Wme{} = wme,
+        bindings
+      ) do
+    %{graph: graph} = rete
     children = Graph.out_neighbors(graph, current_node)
 
     Enum.reduce(children, {rete, bindings}, fn vertex, {network, bindings} ->
       propagate_activation(vertex, network, wme, bindings)
     end)
+  end
+
+  def continue_traversal(
+        %Retex{} = new_rete,
+        %{} = new_bindings,
+        %_{} = current_node,
+        %Retex.Wme{} = wme,
+        tokens
+      ) do
+    {new_rete, new_bindings}
+    propagate_activations(new_rete, current_node, wme, new_bindings, tokens)
   end
 
   def continue_traversal(
@@ -206,5 +240,27 @@ defmodule Retex do
 
   def stop_traversal(%Retex{} = rete, %{} = bindings) do
     {rete, bindings}
+  end
+
+  defp compile_given(_acc, []), do: []
+
+  defp compile_given(acc, conditions) do
+    {_, new_conditions} =
+      Enum.reduce(conditions, {acc, []}, fn condition, {acc, conds} ->
+        case condition do
+          %Fact.Isa{type: type, variable: variable} = condition ->
+            acc = Map.put_new(acc, variable, type)
+            {acc, [condition | conds]}
+
+          %Fact.HasAttribute{owner: "$" <> _variable_name = var} = condition ->
+            type = Map.get(acc, var) || raise("#{var} is not defined")
+            {acc, [%{condition | owner: type} | conds]}
+
+          condition ->
+            {acc, [condition | conds]}
+        end
+      end)
+
+    new_conditions
   end
 end
