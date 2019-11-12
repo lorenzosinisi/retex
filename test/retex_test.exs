@@ -38,9 +38,15 @@ defmodule RetexTest do
     ]
 
     rule = create_rule(lhs: given, rhs: action)
-    network = Retex.new()
+    network = Retex.new() |> Retex.add_production(rule)
+
+    edges_before_second_add_rule = Graph.edges(network.graph) |> Enum.count()
+    vertices_before_second_add_rule = Graph.vertices(network.graph) |> Enum.count()
+
     network = Retex.add_production(network, rule)
-    Retex.add_production(network, rule)
+
+    assert edges_before_second_add_rule == Graph.edges(network.graph) |> Enum.count()
+    assert vertices_before_second_add_rule == Graph.vertices(network.graph) |> Enum.count()
   end
 
   test "add a production with existing attributes" do
