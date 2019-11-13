@@ -3,6 +3,10 @@ defmodule RetexTest do
   alias Retex.{Fact, Wme}
   doctest Retex
 
+  defp relation(from, name, to) do
+    Fact.Relation.new(name: name, from: from, to: to)
+  end
+
   defp isa(variable, type) do
     isa(variable: variable, type: type)
   end
@@ -222,7 +226,7 @@ defmodule RetexTest do
       assert network.agenda == [[{"$thing", :account_status, :silver}]]
     end
 
-    test "apply inference with the use of variables and types have the same id" do
+    test "apply inference with the use of relations" do
       wmes = [
         Wme.new(:Account, :status, :silver),
         Wme.new(:Account, :id, 1),
@@ -232,9 +236,8 @@ defmodule RetexTest do
 
       given = [
         has_attribute(:Account, :status, :==, "$status"),
-        has_attribute(:Account, :id, :==, "$account_id"),
         has_attribute(:Family, :size, :==, "$family_size"),
-        has_attribute(:Family, :account_id, :==, "$account_id")
+        relation(:Account, :from_family, :Family)
       ]
 
       action = [

@@ -7,7 +7,8 @@ defmodule Retex do
             agenda: [],
             activations: %{},
             wme_activations: %{},
-            bindings: %{}
+            bindings: %{},
+            schema: %{}
 
   def root_vertex(), do: Retex.Root.new()
 
@@ -44,6 +45,26 @@ defmodule Retex do
           %Fact.HasAttribute{owner: "$" <> variable_name = var} = condition ->
             type = Map.get(acc, var) || raise("#{var} is not defined")
             {acc, [%{condition | owner: type} | conds]}
+
+          %Fact.Relation{} = condition ->
+            %{from: from, name: _rel_name, to: to, via: via} = condition
+            var = "$" <> to_string(via)
+
+            has_attribute_owner = %Fact.HasAttribute{
+              attribute: :id,
+              owner: from,
+              predicate: :==,
+              value: var
+            }
+
+            has_attribute_child = %Fact.HasAttribute{
+              attribute: via,
+              owner: to,
+              predicate: :==,
+              value: var
+            }
+
+            {acc, [has_attribute_child | [has_attribute_owner | conds]]}
 
           condition ->
             {acc, [condition | conds]}
