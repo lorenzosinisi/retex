@@ -1,6 +1,6 @@
 defmodule RetexTest do
   use ExUnit.Case
-  alias Retex.Fact
+  alias Retex.{Fact, Wme}
   doctest Retex
 
   defp isa(variable, type) do
@@ -220,6 +220,38 @@ defmodule RetexTest do
         |> Retex.add_wme(wme_3)
 
       assert network.agenda == [[{"$thing", :account_status, :silver}]]
+    end
+
+    test "apply inference with the use of variables and types have the same id" do
+      wmes = [
+        Wme.new(:Account, :status, :silver),
+        Wme.new(:Account, :id, 1),
+        Wme.new(:Family, :size, 10),
+        Wme.new(:Family, :account_id, 1)
+      ]
+
+      given = [
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :id, :==, "$account_id"),
+        has_attribute(:Family, :size, :==, "$family_size"),
+        has_attribute(:Family, :account_id, :==, "$account_id")
+      ]
+
+      action = [
+        {:Flight, :account_status, "$a"},
+        {:Flight, :account_id, "$account_id"}
+      ]
+
+      rule = create_rule(lhs: given, rhs: action)
+
+      network = Retex.add_production(Retex.new(), rule)
+
+      network =
+        Enum.reduce(wmes, network, fn wme, network ->
+          Retex.add_wme(network, wme)
+        end)
+
+      assert network.agenda == [[{:Flight, :account_status, :silver}, {:Flight, :account_id, 1}]]
     end
 
     test "apply inference with the use of variables and they DONT match" do
