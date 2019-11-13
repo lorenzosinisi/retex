@@ -231,15 +231,15 @@ defmodule RetexTest do
       ]
 
       given = [
-        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :status, :==, "$status"),
         has_attribute(:Account, :id, :==, "$account_id"),
         has_attribute(:Family, :size, :==, "$family_size"),
         has_attribute(:Family, :account_id, :==, "$account_id")
       ]
 
       action = [
-        {:Flight, :account_status, "$a"},
-        {:Flight, :account_id, "$account_id"}
+        {:Account, :id, "$account_id"},
+        {:Account, :duplicated_status, "$status"}
       ]
 
       rule = create_rule(lhs: given, rhs: action)
@@ -251,7 +251,7 @@ defmodule RetexTest do
           Retex.add_wme(network, wme)
         end)
 
-      assert network.agenda == [[{:Flight, :account_status, :silver}, {:Flight, :account_id, 1}]]
+      assert network.agenda == [[{:Account, :id, 1}, {:Account, :duplicated_status, :silver}]]
     end
 
     test "apply inference with the use of variables and they DONT match" do
