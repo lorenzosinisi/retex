@@ -82,7 +82,10 @@ defmodule Retex do
     graph |> Graph.add_vertex(pnode) |> Graph.add_edge(beta_memory, pnode)
   end
 
-  @spec build_alpha_network(Fact.Isa.t() | Fact.HasAttribute.t(), {Graph.t(), list(network_node())}) :: {Graph.t(), list(network_node())}
+  @spec build_alpha_network(
+          Fact.Isa.t() | Fact.HasAttribute.t(),
+          {Graph.t(), list(network_node())}
+        ) :: {Graph.t(), list(network_node())}
   def build_alpha_network(%Fact.Isa{} = condition, {graph, test_nodes}) do
     %{variable: _, type: type} = condition
     {type_node, _} = Node.Type.new(type)
@@ -163,7 +166,8 @@ defmodule Retex do
     %{pnode | action: new_actions}
   end
 
-  @spec add_token(Retex.t(), network_node(), Retex.Wme.t(), map, list(Retex.Token.t())) :: Retex.t()
+  @spec add_token(Retex.t(), network_node(), Retex.Wme.t(), map, list(Retex.Token.t())) ::
+          Retex.t()
   def add_token(
         %Retex{tokens: rete_tokens} = rete,
         current_node,
@@ -213,7 +217,13 @@ defmodule Retex do
     %{new_rete | wme_activations: new_wme_activations}
   end
 
-  @spec propagate_activations(Retex.t(), network_node(), Retex.Wme.t(), map, list(Retex.Token.t())) :: {Retex.t(), map}
+  @spec propagate_activations(
+          Retex.t(),
+          network_node(),
+          Retex.Wme.t(),
+          map,
+          list(Retex.Token.t())
+        ) :: {Retex.t(), map}
   def propagate_activations(
         %Retex{} = rete,
         %{} = current_node,
@@ -244,7 +254,8 @@ defmodule Retex do
     end)
   end
 
-  @spec continue_traversal(Retex.t(), map, network_node(), Retex.Wme.t(), list(Retex.Token.t())) :: {Retex.t(), map}
+  @spec continue_traversal(Retex.t(), map, network_node(), Retex.Wme.t(), list(Retex.Token.t())) ::
+          {Retex.t(), map}
   def continue_traversal(
         %Retex{} = new_rete,
         %{} = new_bindings,
@@ -285,6 +296,26 @@ defmodule Retex do
           %Fact.HasAttribute{owner: "$" <> _variable_name = var} = condition ->
             type = Map.get(acc, var) || raise("#{var} is not defined")
             {acc, [%{condition | owner: type} | conds]}
+
+          %Fact.Relation{} = condition ->
+            %{from: from, name: _rel_name, to: to, via: via} = condition
+            var = "$" <> to_string(via)
+
+            has_attribute_owner = %Fact.HasAttribute{
+              attribute: :id,
+              owner: from,
+              predicate: :==,
+              value: var
+            }
+
+            has_attribute_child = %Fact.HasAttribute{
+              attribute: via,
+              owner: to,
+              predicate: :==,
+              value: var
+            }
+
+            {acc, [has_attribute_child | [has_attribute_owner | conds]]}
 
           condition ->
             {acc, [condition | conds]}
