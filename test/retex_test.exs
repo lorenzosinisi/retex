@@ -1,27 +1,8 @@
 defmodule RetexTest do
   use ExUnit.Case
-  alias Retex.{Fact, Wme}
+  alias Retex.{Wme, Facts}
+  import Facts
   doctest Retex
-
-  defp relation(from, name, to) do
-    Fact.Relation.new(name: name, from: from, to: to)
-  end
-
-  defp isa(variable, type) do
-    isa(variable: variable, type: type)
-  end
-
-  defp isa(fields) do
-    Fact.Isa.new(fields)
-  end
-
-  defp has_attribute(owner, attribute, predicate, value) do
-    has_attribute(owner: owner, attribute: attribute, predicate: predicate, value: value)
-  end
-
-  defp has_attribute(fields) do
-    Fact.HasAttribute.new(fields)
-  end
 
   defp create_rule(lhs: given, rhs: action) do
     %{
