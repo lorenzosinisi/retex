@@ -143,11 +143,36 @@ defmodule Retex do
   def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
     new_actions =
       Enum.map(actions, fn action ->
-        List.to_tuple(
-          for element <- Tuple.to_list(action) do
-            if is_binary(element), do: Map.get(bindings, element, element), else: element
-          end
-        )
+        case action do
+          action when is_tuple(action) ->
+            List.to_tuple(
+              for element <- Tuple.to_list(action) do
+                if is_binary(element), do: Map.get(bindings, element, element), else: element
+              end
+            )
+
+          anything ->
+            anything
+        end
+      end)
+
+    %{pnode | action: new_actions}
+  end
+
+  def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
+    new_actions =
+      Enum.map(actions, fn action ->
+        case action do
+          action when is_tuple(action) ->
+            List.to_tuple(
+              for element <- Tuple.to_list(action) do
+                if is_binary(element), do: Map.get(bindings, element, element), else: element
+              end
+            )
+
+          anything ->
+            anything
+        end
       end)
 
     %{pnode | action: new_actions}
