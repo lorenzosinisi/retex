@@ -156,7 +156,7 @@ defmodule Retex do
         end
       end)
 
-    %{pnode | action: new_actions}
+    %{pnode | action: new_actions, bindings: bindings}
   end
 
   def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
@@ -175,7 +175,7 @@ defmodule Retex do
         end
       end)
 
-    %{pnode | action: new_actions}
+    %{pnode | action: new_actions, bindings: bindings}
   end
 
   def replace_bindings(%_{action: actions} = pnode, {_, _, bindings}) when is_map(bindings) do
@@ -194,7 +194,7 @@ defmodule Retex do
         end
       end)
 
-    %{pnode | action: new_actions}
+    %{pnode | action: new_actions, bindings: bindings}
   end
 
   @spec add_token(Retex.t(), network_node(), Retex.Wme.t(), map, list(Retex.Token.t())) ::

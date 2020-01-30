@@ -155,9 +155,38 @@ defmodule RetexTest do
         |> Retex.add_wme(wme_2)
         |> Retex.add_wme(wme_3)
 
-      assert network.agenda == [
-               {"$thing", :account_status, :silver}
-             ]
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert agenda == [[{"$thing", :account_status, :silver}]]
+    end
+
+    test "the bindings are returned upon node activation" do
+      wme = Retex.Wme.new(:Account, :status, :silver)
+      wme_2 = Retex.Wme.new(:Account, :premium, true)
+      wme_3 = Retex.Wme.new(:Family, :size, 10)
+
+      given = [
+        isa("$thing", :Account),
+        has_attribute("$thing", :status, :==, "$a"),
+        has_attribute("$thing", :premium, :==, true)
+      ]
+
+      action = [
+        {"$thing", :account_status, "$a"}
+      ]
+
+      rule = create_rule(lhs: given, rhs: action)
+
+      network =
+        Retex.new()
+        |> Retex.add_production(rule)
+        |> Retex.add_wme(wme)
+        |> Retex.add_wme(wme_2)
+        |> Retex.add_wme(wme_3)
+
+      agenda = network.agenda
+      [pnode] = agenda
+      assert pnode.bindings == %{"$a" => :silver}
     end
 
     test "apply inference with rules in which all elements are variables" do
@@ -184,9 +213,11 @@ defmodule RetexTest do
         |> Retex.add_wme(wme_2)
         |> Retex.add_wme(wme_3)
 
-      assert network.agenda == [
-               {"$thing", :account_status, :silver}
-             ]
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      [pnodes] = agenda
+
+      assert pnodes == [{"$thing", :account_status, :silver}]
     end
 
     test "apply inference with the use of variables as types" do
@@ -214,7 +245,8 @@ defmodule RetexTest do
         |> Retex.add_wme(wme_2)
         |> Retex.add_wme(wme_3)
 
-      assert network.agenda == [{"$thing", :account_status, :silver}]
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+      assert agenda == [[{"$thing", :account_status, :silver}]]
     end
 
     test "apply inference with the use of relations" do
@@ -245,7 +277,9 @@ defmodule RetexTest do
           Retex.add_wme(network, wme)
         end)
 
-      assert network.agenda == [{:Account, :id, 1}, {:Account, :duplicated_status, :silver}]
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert agenda == [[{:Account, :id, 1}, {:Account, :duplicated_status, :silver}]]
     end
 
     test "apply inference with the use of variables and they DONT match" do
@@ -269,7 +303,9 @@ defmodule RetexTest do
         |> Retex.add_wme(wme)
         |> Retex.add_wme(wme_2)
 
-      assert network.agenda == []
+      agenda = network.agenda
+
+      assert agenda == []
     end
 
     test "apply inference with the use of variables and they match" do
@@ -293,9 +329,9 @@ defmodule RetexTest do
         |> Retex.add_wme(wme)
         |> Retex.add_wme(wme_2)
 
-      assert network.agenda == [
-               {:Flight, :account_status, :silver}
-             ]
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert ^agenda = [[{:Flight, :account_status, :silver}]]
     end
 
     test "tokens are created" do
@@ -319,8 +355,10 @@ defmodule RetexTest do
         |> Retex.add_wme(wme)
         |> Retex.add_wme(wme_2)
 
-      assert network.agenda == [
-               {:Flight, :account_status, :silver}
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert agenda == [
+               [{:Flight, :account_status, :silver}]
              ]
 
       assert network.tokens !== nil
@@ -360,16 +398,20 @@ defmodule RetexTest do
         |> Retex.add_wme(wme)
         |> Retex.add_wme(wme_2)
 
-      assert network.agenda == [{:Flight, :account_status, :silver}]
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert agenda == [[{:Flight, :account_status, :silver}]]
 
       network =
         network
         |> Retex.add_wme(wme_4)
 
-      assert network.agenda == [
-               {:Flight, :account_status_a, 10},
-               {:Flight, :account_status, :silver},
-               {:Flight, :account_status, 10}
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert agenda == [
+               [{:Flight, :account_status_a, 10}],
+               [{:Flight, :account_status, :silver}],
+               [{:Flight, :account_status, 10}]
              ]
     end
 
@@ -409,16 +451,20 @@ defmodule RetexTest do
         |> Retex.add_wme(wme)
         |> Retex.add_wme(wme_2)
 
-      assert network.agenda == [{:Flight, :account_status, :silver}]
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert agenda == [[{:Flight, :account_status, :silver}]]
 
       network =
         network
         |> Retex.add_wme(wme_3)
         |> Retex.add_wme(wme_4)
 
-      assert network.agenda == [
-               {:Flight, :account_status_a, 10},
-               {:Flight, :account_status, :silver}
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert agenda == [
+               [{:Flight, :account_status_a, 10}],
+               [{:Flight, :account_status, :silver}]
              ]
     end
 
@@ -443,7 +489,8 @@ defmodule RetexTest do
         |> Retex.add_wme(wme)
         |> Retex.add_wme(wme_2)
 
-      assert network.agenda == [{:Flight, :account_status, :silver}]
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+      assert agenda == [[{:Flight, :account_status, :silver}]]
     end
 
     test "add a new wme, trigger production" do
@@ -464,7 +511,9 @@ defmodule RetexTest do
         |> Retex.add_production(rule)
         |> Retex.add_wme(wme)
 
-      assert network.agenda == [{:Flight, :account_status, "silver"}]
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert agenda == [[{:Flight, :account_status, "silver"}]]
     end
 
     test "add a new wme" do

@@ -3,10 +3,10 @@ defmodule Retex.Node.PNode do
   Production node. This is like a production node in Rete algorithm. It is activated if all
   the conditions in a rule are matching and contains the action that can be executed as consequence.
   """
-  defstruct type: :PNode, action: nil, id: nil
+  defstruct type: :PNode, action: nil, id: nil, raw_action: nil, bindings: %{}
 
   def new(action, labels \\ []) do
-    item = %__MODULE__{action: action}
+    item = %__MODULE__{action: action, raw_action: action}
     {%{item | id: Retex.hash(item)}, labels}
   end
 
@@ -23,7 +23,7 @@ defmodule Retex.Node.PNode do
       tokens = Map.get(tokens, parent.id)
 
       with true <- Enum.all?(parents, &Map.get(activations, &1.id)) do
-        actions =
+        productions =
           for token <- tokens do
             if is_tuple(token) do
               Retex.replace_bindings(neighbor, token)
@@ -33,11 +33,10 @@ defmodule Retex.Node.PNode do
           end
           |> List.flatten()
           |> Enum.uniq()
-          |> Enum.map(fn node -> node.action end)
 
         new_rete = %{
           rete
-          | agenda: ([actions] ++ rete.agenda) |> List.flatten() |> Enum.uniq()
+          | agenda: ([productions] ++ rete.agenda) |> List.flatten() |> Enum.uniq()
         }
 
         Retex.stop_traversal(new_rete, %{})
