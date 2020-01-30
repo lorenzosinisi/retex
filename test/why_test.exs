@@ -24,10 +24,10 @@ defmodule Retex.WhyTest do
     rule = create_rule(lhs: given, rhs: action)
 
     network = Retex.add_production(Retex.new(), rule)
-    {pnode, _} = Node.PNode.new([{:Flight, :account_status, "$a"}])
+    action = network.agenda |> List.first()
 
     assert "It exists an entity of type Account, with status == $a; " <>
              "It exists an entity of type Family, with size == $a" =
-             inspect(Why.explain(network, pnode))
+             inspect(Why.explain(network, action))
   end
 end

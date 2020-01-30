@@ -6,8 +6,10 @@ defmodule Retex.Why do
   """
 
   defstruct conclusion: nil, paths: []
+  alias Retex.Node.PNode
 
-  def explain(%Retex{graph: graph}, conclusion) do
+  def explain(%Retex{graph: graph}, %PNode{} = conclusion) do
+    {conclusion, _} = PNode.new(conclusion.raw_action)
     paths = Graph.get_paths(graph, Retex.root_vertex(), conclusion)
     %__MODULE__{paths: paths, conclusion: conclusion}
   end
