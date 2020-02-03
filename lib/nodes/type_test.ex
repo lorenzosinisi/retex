@@ -33,7 +33,7 @@ defmodule Retex.Node.Test do
           bindings,
           tokens
         ) do
-      if apply(Kernel, operator, [value, wme.value]) do
+      if apply(Kernel, operator, [wme.value, value]) do
         rete
         |> Retex.create_activation(neighbor, wme)
         |> Retex.add_token(neighbor, wme, bindings, tokens)
