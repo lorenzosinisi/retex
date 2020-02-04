@@ -31,8 +31,6 @@ defmodule Retex.WhyTest do
 
     action = network.agenda |> List.first()
 
-    assert "It exists an entity of type Account, with status == $a; " <>
-             "It exists an entity of type Family, with size == $a" =
-             inspect(Why.explain(network, action))
+    assert 2 == Enum.count(Why.explain(network, action) |> Map.get(:paths))
   end
 end
