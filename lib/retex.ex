@@ -151,6 +151,15 @@ defmodule Retex do
               end
             )
 
+          %Retex.Wme{} = action ->
+            populated =
+              for {key, val} <- Map.from_struct(action), into: %{} do
+                val = Map.get(bindings, val, val)
+                {key, val}
+              end
+
+            struct(Retex.Wme, populated)
+
           anything ->
             anything
         end
@@ -170,6 +179,15 @@ defmodule Retex do
               end
             )
 
+          %Retex.Wme{} = action ->
+            populated =
+              for {key, val} <- Map.from_struct(action), into: %{} do
+                val = Map.get(bindings, val, val)
+                {key, val}
+              end
+
+            struct(Retex.Wme, populated)
+
           anything ->
             anything
         end
@@ -188,6 +206,15 @@ defmodule Retex do
                 if is_binary(element), do: Map.get(bindings, element, element), else: element
               end
             )
+
+          %Retex.Wme{} = action ->
+            populated =
+              for {key, val} <- Map.from_struct(action), into: %{} do
+                val = Map.get(bindings, val, val)
+                {key, val}
+              end
+
+            struct(Retex.Wme, populated)
 
           anything ->
             anything
