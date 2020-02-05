@@ -1,5 +1,7 @@
 # Retex
 
+![Elixir CI](https://github.com/lorenzosinisi/retex/workflows/Elixir%20CI/badge.svg)
+
 **Boilerplate/PoC of the Rete Algorithm implementated in Elixir**
 
 Rete is a complex stateful algorithm, this is an attempt of reproducing it with a functional immutable language
