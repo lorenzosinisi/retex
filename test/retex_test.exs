@@ -169,6 +169,64 @@ defmodule RetexTest do
              ] = agenda
     end
 
+    test "return only the bindings of the fully activated rule" do
+      given = [
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :premium, :==, "$b"),
+        has_attribute(:Account, :age, :==, "$a"),
+        has_attribute(:Account, :age, :>, 21)
+      ]
+
+      action = [
+        {:Account, :activated_1, "$a"}
+      ]
+
+      rule = create_rule(lhs: given, rhs: action)
+
+      given_2 = [
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :status, :!==, :blue),
+        has_attribute(:Account, :premium, :==, "$b"),
+        has_attribute(:Account, :age, :>, 11)
+      ]
+
+      action_2 = [
+        {:Account, :activated_2, "$a"}
+      ]
+
+      rule_2 = create_rule(lhs: given_2, rhs: action_2)
+
+      wme = Retex.Wme.new(:Account, :status, :silver)
+      wme_2 = Retex.Wme.new(:Account, :premium, true)
+      wme_5 = Retex.Wme.new(:Account, :status, :blue)
+      wme_3 = Retex.Wme.new(:Account, :age, 10)
+      wme_4 = Retex.Wme.new(:Account, :status, :silver)
+
+      network =
+        Retex.new()
+        |> Retex.add_production(rule)
+        |> Retex.add_production(rule_2)
+        |> Retex.add_wme(wme)
+        |> Retex.add_wme(wme_2)
+        |> Retex.add_wme(wme_3)
+        |> Retex.add_wme(wme_4)
+        |> Retex.add_wme(wme_5)
+
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert agenda == []
+
+      triggering = Retex.Wme.new(:Account, :age, 20)
+
+      network = Retex.add_wme(network, triggering)
+
+      agenda = network.agenda |> Enum.map(&Map.take(&1, [:bindings]))
+
+      assert Enum.count(agenda) == 2
+
+      assert agenda == [[{"$thing", :account_status, :silver}]]
+    end
+
     test "apply inference with rules in which we use isa statements" do
       given = [
         isa("$thing", :Account),

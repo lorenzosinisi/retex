@@ -22,7 +22,7 @@ defmodule Retex.Node.PNode do
       [parent] = parents = Graph.in_neighbors(graph, neighbor)
       tokens = Map.get(tokens, parent.id)
 
-      with true <- Enum.all?(parents, &Map.get(activations, &1.id)) do
+      if Enum.all?(parents, &Map.get(activations, &1.id)) do
         productions =
           for token <- tokens do
             if is_tuple(token) do
@@ -41,7 +41,7 @@ defmodule Retex.Node.PNode do
 
         Retex.stop_traversal(new_rete, %{})
       else
-        _ -> Retex.stop_traversal(rete, %{})
+        Retex.stop_traversal(rete, %{})
       end
     end
   end
