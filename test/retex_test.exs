@@ -185,7 +185,7 @@ defmodule RetexTest do
 
       given_2 = [
         has_attribute(:Account, :status, :==, "$a"),
-        has_attribute(:Account, :status, :!==, :blue),
+        filter("$a", :!==, :blue),
         has_attribute(:Account, :premium, :==, "$b"),
         has_attribute(:Account, :age, :>, 11)
       ]
@@ -222,9 +222,7 @@ defmodule RetexTest do
 
       agenda = network.agenda |> Enum.map(&Map.take(&1, [:bindings]))
 
-      assert Enum.count(agenda) == 2
-
-      assert agenda == [[{"$thing", :account_status, :silver}]]
+      assert agenda == [%{bindings: %{"$a" => :silver, "$b" => true}}]
     end
 
     test "apply inference with rules in which we use isa statements" do

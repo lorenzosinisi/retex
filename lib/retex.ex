@@ -1,6 +1,6 @@
 defmodule Retex do
   @moduledoc false
-  alias Retex.{Node, Protocol, Fact, Token}
+  alias Retex.{Node, Protocol, Fact, Token, Fact.Filter}
 
   alias Node.{
     Type,
@@ -47,14 +47,22 @@ defmodule Retex do
   @spec add_production(Retex.t(), %{given: list(Retex.Wme.t()), then: action()}) :: Retex.t()
   def add_production(%{graph: graph} = network, %{given: given, then: action}) do
     given = compile_given(%{}, given)
+    {filters, given} = split_conditions_from_filters(given)
 
     {graph, alphas} =
       given |> Enum.reverse() |> Enum.reduce({graph, []}, &build_alpha_network(&1, &2))
 
     {beta_memory, graph} = build_beta_network(graph, alphas)
-    graph = add_p_node(graph, beta_memory, action)
+    graph = add_p_node(graph, beta_memory, action, filters)
     %{network | graph: graph}
   end
+
+  defp split_conditions_from_filters(given) do
+    Enum.split_with(given, &is_filter?/1)
+  end
+
+  defp is_filter?(%Fact.Filter{}), do: true
+  defp is_filter?(_), do: false
 
   @spec build_beta_network(Graph.t(), list(network_node())) :: {list(network_node()), Graph.t()}
   def build_beta_network(graph, disjoint_beta_network) do
@@ -76,9 +84,9 @@ defmodule Retex do
     {beta_memory, graph}
   end
 
-  @spec add_p_node(Graph.t(), BetaMemory.t(), action()) :: Graph.t()
-  def add_p_node(graph, beta_memory, action) do
-    {pnode, _} = Node.PNode.new(action)
+  @spec add_p_node(Graph.t(), BetaMemory.t(), action(), list(Fact.Filter.t())) :: Graph.t()
+  def add_p_node(graph, beta_memory, action, filters) do
+    {pnode, _} = Node.PNode.new(action, filters)
     graph |> Graph.add_vertex(pnode) |> Graph.add_edge(beta_memory, pnode)
   end
 

@@ -11,6 +11,10 @@ defmodule Retex.Facts do
     isa(variable: variable, type: type)
   end
 
+  def filter(variable, predicate, value) do
+    Fact.Filter.new(variable: variable, predicate: predicate, value: value)
+  end
+
   def isa(fields) do
     Fact.Isa.new(fields)
   end
