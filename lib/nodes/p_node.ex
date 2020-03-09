@@ -19,7 +19,13 @@ defmodule Retex.Node.PNode do
           _tokens
         ) do
       # A production node has only one parent
-      [parent] = parents = Graph.in_neighbors(graph, neighbor)
+      [parent | _] =
+        parents =
+        Graph.in_neighbors(graph, neighbor)
+        |> Enum.filter(fn node ->
+          Map.get(activations, node.id)
+        end)
+
       tokens = Map.get(tokens, parent.id)
 
       if Enum.all?(parents, &Map.get(activations, &1.id)) do
