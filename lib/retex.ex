@@ -359,12 +359,8 @@ defmodule Retex do
             acc = Map.put_new(acc, variable, type)
             {acc, [condition | conds]}
 
-          %Fact.HasAttribute{owner: "$" <> _variable_name = var} = condition ->
-            if type = Map.get(acc, var) do
-              {acc, [%{condition | owner: type} | conds]}
-            else
-              {acc, [condition | conds]}
-            end
+          %Fact.HasAttribute{owner: _var} = condition ->
+            {acc, [condition | conds]}
 
           %Fact.Relation{} = condition ->
             %{from: from, name: _rel_name, to: to, via: via} = condition
