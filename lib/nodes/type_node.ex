@@ -13,6 +13,19 @@ defmodule Retex.Node.Type do
 
   defimpl Retex.Protocol.Activation do
     def activate(
+          %Retex.Node.Type{class: _class} = neighbor,
+          %Retex{graph: _graph} = rete,
+          %Retex.Wme{identifier: "$" <> identifier = var} = wme,
+          bindings,
+          tokens
+        ) do
+      rete
+      |> Retex.create_activation(neighbor, wme)
+      |> Retex.add_token(neighbor, wme, Map.merge(bindings, %{var => identifier}), tokens)
+      |> Retex.continue_traversal(Map.merge(bindings, %{var => identifier}), neighbor, wme)
+    end
+
+    def activate(
           %Retex.Node.Type{class: "$" <> _variable = var} = neighbor,
           %Retex{graph: _graph} = rete,
           %Retex.Wme{identifier: identifier} = wme,
