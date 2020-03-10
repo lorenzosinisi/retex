@@ -360,8 +360,11 @@ defmodule Retex do
             {acc, [condition | conds]}
 
           %Fact.HasAttribute{owner: "$" <> _variable_name = var} = condition ->
-            type = Map.get(acc, var) || raise("#{var} is not defined")
-            {acc, [%{condition | owner: type} | conds]}
+            if type = Map.get(acc, var) do
+              {acc, [%{condition | owner: type} | conds]}
+            else
+              {acc, [condition | conds]}
+            end
 
           %Fact.Relation{} = condition ->
             %{from: from, name: _rel_name, to: to, via: via} = condition
