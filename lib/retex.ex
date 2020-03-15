@@ -55,7 +55,7 @@ defmodule Retex do
 
     {beta_memory, graph} = build_beta_network(graph, alphas)
     graph = add_p_node(graph, beta_memory, action, filters)
-    Map.put(:graph, graph)
+    %{network | graph: graph}
   end
 
   defp split_conditions_from_filters(given) do
