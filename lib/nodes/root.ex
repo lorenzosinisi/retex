@@ -6,6 +6,8 @@ defmodule Retex.Root do
   """
   defstruct class: :Root, id: :root
 
+  @type t :: %Retex.Root{}
+
   def new(), do: %__MODULE__{}
 
   defimpl Retex.Protocol.Activation do

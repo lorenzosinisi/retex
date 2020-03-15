@@ -7,6 +7,7 @@ defmodule Retex.Node.Test do
   to the beta network.
   """
   defstruct type: :NodeTest, class: nil, id: nil, bindings: %{}
+  @type t :: %Retex.Node.Test{}
 
   def new(class, id, labels \\ []), do: {%__MODULE__{class: class, id: id}, labels}
 

@@ -6,6 +6,7 @@ defmodule Retex.Node.BetaMemory do
   are matching for both of them.
   """
   defstruct type: :BetaMemory, left: nil, right: nil, id: nil, bindings: %{}
+  @type t :: %Retex.Node.BetaMemory{}
 
   def new(left, right, labels \\ []) do
     item = %__MODULE__{left: left, right: right}

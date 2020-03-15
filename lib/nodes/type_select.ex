@@ -5,6 +5,7 @@ defmodule Retex.Node.Select do
   nodes (that will check for their value instead).
   """
   defstruct type: :NodeSelect, class: nil, id: nil, bindings: %{}, parent: nil
+  @type t() :: %Retex.Node.Select{}
 
   def new(parent, class, labels \\ []) do
     item = %__MODULE__{class: class, parent: parent}

@@ -43,7 +43,8 @@ defmodule Retex.MixProject do
       {:libgraph, "~> 0.7"},
       {:uuid_tools, "~> 0.1.0"},
       {:duration_tc, "~> 0.1.1", only: :dev},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false}
     ]
   end
 end

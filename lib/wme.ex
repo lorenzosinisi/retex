@@ -3,10 +3,10 @@ defmodule Retex.Wme do
     A working memory element, it represent the world in the form of identifier, attribute and values
     timestamp is set at time of insertion into retex
   """
-  @type wme_identifier :: String.t() | atom()
-  @type attribute :: String.t() | atom()
-  @type id :: String.t() | number()
-  @type value :: any()
+  @type wme_identifier() :: String.t() | atom()
+  @type attribute() :: String.t() | atom()
+  @type id() :: String.t() | number()
+  @type value() :: any()
 
   @type t :: %__MODULE__{
           identifier: wme_identifier(),
@@ -18,7 +18,6 @@ defmodule Retex.Wme do
 
   defstruct identifier: nil, attribute: nil, value: nil, id: nil, timestamp: nil
 
-  @spec new(id(), attribute(), value()) :: t()
   def new(id, attr, val) do
     item = %__MODULE__{identifier: id, attribute: attr, value: val}
     Map.put(item, :id, Retex.hash(item))

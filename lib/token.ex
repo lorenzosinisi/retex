@@ -13,6 +13,8 @@ defmodule Retex.Token do
   """
   defstruct wmem: nil, node: nil, bindings: %{}, id: nil
 
+  @type t() :: %Retex.Token{}
+
   def new() do
     Map.put(%__MODULE__{}, :id, Retex.hash(:uuid4))
   end

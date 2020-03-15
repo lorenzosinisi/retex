@@ -9,7 +9,7 @@ defmodule Retex.Fact.HasAttribute do
   @type value :: any()
   @type fields :: [owner: owner(), attribute: attribute(), predicate: predicate(), value: value()]
 
-  @type t :: %__MODULE__{
+  @type t :: %Retex.Fact.HasAttribute{
           owner: owner(),
           attribute: attribute(),
           predicate: predicate(),

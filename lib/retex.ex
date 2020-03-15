@@ -1,5 +1,7 @@
 defmodule Retex do
   @moduledoc false
+
+  @type t() :: %Retex{}
   alias Retex.{Node, Protocol, Fact, Token, Fact.Filter}
 
   alias Node.{
@@ -44,7 +46,7 @@ defmodule Retex do
     Protocol.Activation.activate(neighbor, rete, wme, bindings, tokens)
   end
 
-  @spec add_production(Retex.t(), %{given: list(Retex.Wme.t()), then: action()}) :: Retex.t()
+  @spec add_production(Retex.t(), %{given: list(Retex.Wme.t()), then: action()}) :: t()
   def add_production(%{graph: graph} = network, %{given: given, then: action}) do
     {filters, given} = split_conditions_from_filters(given)
 
@@ -53,7 +55,7 @@ defmodule Retex do
 
     {beta_memory, graph} = build_beta_network(graph, alphas)
     graph = add_p_node(graph, beta_memory, action, filters)
-    %{network | graph: graph}
+    Map.put(:graph, graph)
   end
 
   defp split_conditions_from_filters(given) do

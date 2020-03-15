@@ -5,6 +5,7 @@ defmodule Retex.Node.Type do
   down to the select node types. They will select an attribute and check for its existance.
   """
   defstruct type: :NodeType, class: nil, id: nil, bindings: %{}
+  @type t :: %Retex.Node.Type{}
 
   def new(class, labels \\ []) do
     item = %__MODULE__{class: class}
