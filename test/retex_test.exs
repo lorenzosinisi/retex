@@ -1,6 +1,6 @@
 defmodule RetexTest do
   use ExUnit.Case
-  alias Retex.{Wme, Facts}
+  alias Retex.{Facts}
   import Facts
   doctest Retex
 
@@ -65,8 +65,8 @@ defmodule RetexTest do
       |> Retex.add_production(rule)
       |> Retex.add_production(rule_b)
 
-    assert 22 == Graph.edges(network.graph) |> Enum.count()
-    assert 18 == Graph.vertices(network.graph) |> Enum.count()
+    assert 20 == Graph.edges(network.graph) |> Enum.count()
+    assert 17 == Graph.vertices(network.graph) |> Enum.count()
   end
 
   test "add a production" do
@@ -120,9 +120,8 @@ defmodule RetexTest do
 
     test "apply inference and replace variables in a WME" do
       given = [
-        isa("$thing", :Account),
-        has_attribute("$thing", :status, :==, "$a"),
-        has_attribute("$thing", :premium, :==, true)
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :premium, :==, true)
       ]
 
       action = [
@@ -132,9 +131,8 @@ defmodule RetexTest do
       rule = create_rule(lhs: given, rhs: action)
 
       given_2 = [
-        isa("$thing_a", :AccountB),
-        has_attribute("$thing_a", :status, :==, "$a_a"),
-        has_attribute("$thing_a", :premium, :==, true)
+        has_attribute(:AccountB, :status, :==, "$a_a"),
+        has_attribute(:AccountB, :premium, :==, true)
       ]
 
       action_2 = [
@@ -227,9 +225,8 @@ defmodule RetexTest do
 
     test "apply inference with rules in which we use isa statements" do
       given = [
-        isa("$thing", :Account),
-        has_attribute("$thing", :status, :==, "$a"),
-        has_attribute("$thing", :premium, :==, true)
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :premium, :==, true)
       ]
 
       action = [
@@ -239,9 +236,8 @@ defmodule RetexTest do
       rule = create_rule(lhs: given, rhs: action)
 
       given_2 = [
-        isa("$thing_a", :AccountB),
-        has_attribute("$thing_a", :status, :==, "$a_a"),
-        has_attribute("$thing_a", :premium, :==, true)
+        has_attribute(:AccountB, :status, :==, "$a_a"),
+        has_attribute(:AccountB, :premium, :==, true)
       ]
 
       action_2 = [
@@ -273,9 +269,8 @@ defmodule RetexTest do
       wme_3 = Retex.Wme.new(:Family, :size, 10)
 
       given = [
-        isa("$thing", :Account),
-        has_attribute("$thing", :status, :==, "$a"),
-        has_attribute("$thing", :premium, :==, true)
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :premium, :==, true)
       ]
 
       action = [
@@ -302,9 +297,8 @@ defmodule RetexTest do
       wme_3 = Retex.Wme.new(:Family, :size, 10)
 
       given = [
-        isa("$thing", :Account),
-        has_attribute("$thing", :status, :==, "$a"),
-        has_attribute("$thing", :premium, :==, true)
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :premium, :==, true)
       ]
 
       action = [
@@ -333,9 +327,8 @@ defmodule RetexTest do
       wme_3 = Retex.Wme.new(:Family, :size, 10)
 
       given = [
-        isa("$thing", :Account),
-        has_attribute("$thing", :status, :==, "$a"),
-        has_attribute("$thing", :premium, :==, false),
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :premium, :==, false),
         has_attribute(:Family, :size, :==, "$c")
       ]
 
@@ -354,39 +347,6 @@ defmodule RetexTest do
 
       agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
       assert agenda == [[{"$thing", :account_status, :silver}]]
-    end
-
-    test "apply inference with the use of relations" do
-      wmes = [
-        Wme.new(:Account, :status, :silver),
-        Wme.new(:Account, :id, 1),
-        Wme.new(:Family, :size, 10),
-        Wme.new(:Family, :account_id, 1)
-      ]
-
-      given = [
-        has_attribute(:Account, :status, :==, "$status"),
-        has_attribute(:Family, :size, :==, "$family_size"),
-        relation(:Account, :from_family, :Family)
-      ]
-
-      action = [
-        {:Account, :id, "$account_id"},
-        {:Account, :duplicated_status, "$status"}
-      ]
-
-      rule = create_rule(lhs: given, rhs: action)
-
-      network = Retex.add_production(Retex.new(), rule)
-
-      network =
-        Enum.reduce(wmes, network, fn wme, network ->
-          Retex.add_wme(network, wme)
-        end)
-
-      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
-
-      assert agenda == [[{:Account, :id, 1}, {:Account, :duplicated_status, :silver}]]
     end
 
     test "apply inference with the use of variables and they DONT match" do
@@ -513,12 +473,12 @@ defmodule RetexTest do
         network
         |> Retex.add_wme(wme_4)
 
-      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action)) |> Enum.sort()
 
       assert agenda == [
-               [{:Flight, :account_status_a, 10}],
+               [{:Flight, :account_status, 10}],
                [{:Flight, :account_status, :silver}],
-               [{:Flight, :account_status, 10}]
+               [{:Flight, :account_status_a, 10}]
              ]
     end
 
