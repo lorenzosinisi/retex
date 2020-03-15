@@ -46,7 +46,6 @@ defmodule Retex do
 
   @spec add_production(Retex.t(), %{given: list(Retex.Wme.t()), then: action()}) :: Retex.t()
   def add_production(%{graph: graph} = network, %{given: given, then: action}) do
-    given = compile_given(%{}, given)
     {filters, given} = split_conditions_from_filters(given)
 
     {graph, alphas} =
@@ -347,46 +346,5 @@ defmodule Retex do
   @spec stop_traversal(Retex.t(), map) :: {Retex.t(), map}
   def stop_traversal(%Retex{} = rete, %{} = bindings) do
     {rete, bindings}
-  end
-
-  defp compile_given(_acc, []), do: []
-
-  defp compile_given(acc, conditions) do
-    {_, new_conditions} =
-      Enum.reduce(conditions, {acc, []}, fn condition, {acc, conds} ->
-        case condition do
-          %Fact.Isa{type: type, variable: variable} = condition ->
-            acc = Map.put_new(acc, variable, type)
-            {acc, [condition | conds]}
-
-          %Fact.HasAttribute{owner: _var} = condition ->
-            {acc, [condition | conds]}
-
-          %Fact.Relation{} = condition ->
-            %{from: from, name: _rel_name, to: to, via: via} = condition
-            var = "$" <> to_string(via)
-
-            has_attribute_owner = %Fact.HasAttribute{
-              attribute: :id,
-              owner: from,
-              predicate: :==,
-              value: var
-            }
-
-            has_attribute_child = %Fact.HasAttribute{
-              attribute: via,
-              owner: to,
-              predicate: :==,
-              value: var
-            }
-
-            {acc, [has_attribute_child | [has_attribute_owner | conds]]}
-
-          condition ->
-            {acc, [condition | conds]}
-        end
-      end)
-
-    new_conditions
   end
 end
