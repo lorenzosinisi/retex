@@ -1,4 +1,6 @@
 defmodule Benchmark do
+  alias Retex.Agenda
+
   defp isa(variable, type) do
     isa(variable: variable, type: type)
   end
@@ -15,83 +17,69 @@ defmodule Benchmark do
     Retex.Fact.HasAttribute.new(fields)
   end
 
-  defp create_rule(lhs: given, rhs: action) do
+  defp create_rule(lhs: given, rhs: action, id: id) do
     %{
       given: given,
+      id: id,
       then: action
     }
   end
 
-  defp rule(n, type \\ :Thing) do
-    given = [
-      has_attribute(:Thing, :status, :==, "$a_#{n}"),
-      has_attribute(:Thing, :premium, :==, true)
-    ]
+  def generate_rule_chain(depth) do
+    for level <- 1..depth do
+      given = [
+        has_attribute("Thing_#{level}", "attribute_#{level}", :==, level),
+        has_attribute("Thing_#{level}", "attribute_#{level}", :!=, false)
+      ]
 
-    action = [
-      {"$thing_#{n}", :account_status, "$a_#{n}"}
-    ]
+      then =
+        if level + 1 >= depth do
+          []
+        else
+          [Retex.Wme.new("Thing_#{level + 1}", "attribute_#{level + 1}", level + 1)]
+        end
 
-    rule = create_rule(lhs: given, rhs: action)
+      create_rule(lhs: given, rhs: then, id: depth)
+    end
   end
 
-  def run() do
-    wme = Retex.Wme.new(:Account, :status, :silver)
-    wme_2 = Retex.Wme.new(:Account, :premium, true)
-    wme_3 = Retex.Wme.new(:Family, :size, 10)
+  def run(depth \\ 2000) do
+    depth =
+      case parse(System.argv()) do
+        {[depth: depth], _, _} -> depth
+        _ -> depth
+      end
 
-    wme_4 = Retex.Wme.new(:Account, :status, :silver)
-    wme_5 = Retex.Wme.new(:AccountC, :status, :silver)
-    wme_5 = Retex.Wme.new(:AccountD, :status, :silver)
-    number_of_rules = 100_000
-
+    rules = generate_rule_chain(depth)
     require Logger
 
-    Logger.info("Adding #{number_of_rules} rules...")
+    Logger.info("Adding #{depth} rules...")
 
     result =
       Timer.tc(fn ->
-        Enum.reduce(1..number_of_rules, Retex.new(), fn n, network ->
-          Retex.add_production(network, rule(n))
+        Enum.reduce(rules, Retex.new(), fn rule, network ->
+          Retex.add_production(network, rule)
         end)
       end)
 
     duration = result[:humanized_duration]
-    rules_100_000 = result[:reply]
-    Logger.info("Adding #{number_of_rules} rules took #{duration}")
+    network = result[:reply]
+    Logger.info("Adding #{depth} rules took #{duration}")
 
-    given_matching = [
-      has_attribute(:Account, :status, :==, "$account"),
-      has_attribute(:Account, :premium, :==, true)
-    ]
+    wme = Retex.Wme.new("Thing_1", "attribute_1", 1)
 
-    action_2 = [
-      {"$thing", :account_status, "$account"}
-    ]
-
-    rule = create_rule(lhs: given_matching, rhs: action_2)
-    network = Retex.add_production(rules_100_000, rule)
-
-    Logger.info("Network info #{Graph.info(rules_100_000.graph) |> inspect()}")
-
-    result =
-      Timer.tc(fn ->
-        network
-        |> Retex.add_wme(wme)
-        |> Retex.add_wme(wme_2)
-        |> Retex.add_wme(wme_3)
-        |> Retex.add_wme(wme_4)
-        |> Retex.add_wme(wme_5)
-      end)
+    result = Timer.tc(fn -> Retex.add_wme(network, wme) end)
 
     duration = result[:humanized_duration]
     network = result[:reply]
 
-    Logger.info(
-      "Adding 6 working memories took #{duration} and matched #{Enum.count(network.agenda)} rules"
-    )
+    {executed_rules, network} = Agenda.ExecuteOnce.consume_agenda([], network)
 
-    IO.inspect(agenda: network.agenda)
+    Logger.info("Adding working memories took #{duration}")
+  end
+
+  defp parse(args) do
+    OptionParser.parse(args, strict: [depth: :integer])
   end
 end
 
