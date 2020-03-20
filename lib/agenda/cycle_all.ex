@@ -1,11 +1,9 @@
-defmodule Retex.Agenda.ExecuteOnce do
+defmodule Retex.Agenda.CycleAll do
   @behaviour Retex.Agenda.Strategy
   @default_rule_executor Retex.RuleExecutor.Default
-
   def consume_agenda(executed_rules, %{agenda: [rule | rest] = _agenda} = network, opts \\ []) do
     executor = Keyword.get(opts, :rules_executor, @default_rule_executor)
     {rule_id, network} = executor.execute(rule, network)
-
     executed_rules = [rule_id] ++ executed_rules
 
     next_rules =
