@@ -28,8 +28,7 @@ defmodule Retex.Node.BetaMemory do
         |> Retex.add_token(neighbor, wme, bindings, new_tokens)
         |> Retex.continue_traversal(bindings, neighbor, wme)
       else
-        anything ->
-          IO.inspect(anything)
+        _anything ->
           Retex.stop_traversal(rete, %{})
       end
     end

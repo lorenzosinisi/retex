@@ -333,6 +333,26 @@ defmodule Retex do
     end)
   end
 
+  @spec deactivate_descendants(Retex.t(), network_node()) :: Retex.t()
+  def deactivate_descendants(%Retex{activations: activations} = rete, %{} = current_node) do
+    %{graph: graph} = rete
+    children = Graph.out_neighbors(graph, current_node)
+
+    Enum.reduce(children, rete, fn %type{} = vertex, network ->
+      if type == Retex.Node.PNode do
+        new_network = %{
+          network
+          | agenda: Enum.reject(network.agenda, fn pnode -> pnode.id == vertex.id end)
+        }
+
+        deactivate_descendants(new_network, vertex)
+      else
+        new_network = %{network | activations: Map.put(activations, vertex.id, [])}
+        deactivate_descendants(new_network, vertex)
+      end
+    end)
+  end
+
   @spec continue_traversal(Retex.t(), map, network_node(), Retex.Wme.t(), list(Retex.Token.t())) ::
           {Retex.t(), map}
   def continue_traversal(

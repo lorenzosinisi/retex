@@ -118,6 +118,58 @@ defmodule RetexTest do
       assert network.agenda == []
     end
 
+    test "an activation of a negative node will deactivate its descendants" do
+      given = [
+        isa("$thing", :Thing),
+        is_not("$entity", :Flight)
+      ]
+
+      action = [
+        Retex.Wme.new(:Account, :id, 1)
+      ]
+
+      rule = create_rule(lhs: given, rhs: action)
+
+      wme = Retex.Wme.new(:Thing, :status, :silver)
+      wme_1 = Retex.Wme.new(:Flight, :status, :silver)
+
+      network =
+        Retex.new()
+        |> Retex.add_production(rule)
+        |> Retex.add_wme(wme)
+        |> Retex.add_wme(wme_1)
+
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert [] == agenda
+    end
+
+    test "apply inference with a negated condition, when the negative node is active" do
+      given = [
+        isa("$thing", :Thing),
+        is_not("$entity", :Flight)
+      ]
+
+      action = [
+        Retex.Wme.new(:Account, :id, 1)
+      ]
+
+      rule = create_rule(lhs: given, rhs: action)
+
+      wme = Retex.Wme.new(:Flight, :status, :silver)
+      wme_1 = Retex.Wme.new(:Thing, :status, :silver)
+
+      network =
+        Retex.new()
+        |> Retex.add_production(rule)
+        |> Retex.add_wme(wme)
+        |> Retex.add_wme(wme_1)
+
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert [] == agenda
+    end
+
     test "apply inference with a negated condition" do
       given = [
         isa("$thing", :Thing),

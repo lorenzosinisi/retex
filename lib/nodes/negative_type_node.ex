@@ -14,34 +14,6 @@ defmodule Retex.Node.NegativeType do
 
   defimpl Retex.Protocol.Activation do
     def activate(
-          %Retex.Node.NegativeType{class: class} = neighbor,
-          %Retex{graph: _graph} = rete,
-          %Retex.Wme{identifier: "$" <> _identifier = var} = wme,
-          bindings,
-          tokens
-        ) do
-      new_bindings = Map.merge(bindings, %{var => class})
-
-      rete
-      |> Retex.create_activation(neighbor, wme)
-      |> Retex.add_token(neighbor, wme, new_bindings, tokens)
-      |> Retex.continue_traversal(new_bindings, neighbor, wme)
-    end
-
-    def activate(
-          %Retex.Node.NegativeType{class: "$" <> _variable = var} = neighbor,
-          %Retex{graph: _graph} = rete,
-          %Retex.Wme{identifier: identifier} = wme,
-          bindings,
-          tokens
-        ) do
-      rete
-      |> Retex.create_activation(neighbor, wme)
-      |> Retex.add_token(neighbor, wme, Map.merge(bindings, %{var => identifier}), tokens)
-      |> Retex.continue_traversal(Map.merge(bindings, %{var => identifier}), neighbor, wme)
-    end
-
-    def activate(
           %Retex.Node.NegativeType{class: identifier} = neighbor,
           %Retex{} = rete,
           %Retex.Wme{identifier: identifier} = wme,
@@ -51,7 +23,8 @@ defmodule Retex.Node.NegativeType do
       rete
       |> Retex.create_activation(neighbor, wme)
       |> Retex.add_token(neighbor, wme, bindings, tokens)
-      |> Retex.continue_traversal(bindings, neighbor, wme)
+      |> Retex.deactivate_descendants(neighbor)
+      |> Retex.stop_traversal(%{})
     end
 
     def activate(
