@@ -20,5 +20,7 @@ defmodule Retex.Root do
         ) do
       Retex.continue_traversal(rete, bindings, neighbor, wme)
     end
+
+    def active?(_node, _rete), do: true
   end
 end

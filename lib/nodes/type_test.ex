@@ -43,5 +43,10 @@ defmodule Retex.Node.Test do
         rete |> Retex.stop_traversal(%{})
       end
     end
+
+    @spec active?(%{id: any}, Retex.t()) :: boolean()
+    def active?(%{id: id}, %Retex{activations: activations}) do
+      not Enum.empty?(Map.get(activations, id))
+    end
   end
 end

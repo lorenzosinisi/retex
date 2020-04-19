@@ -14,15 +14,9 @@ defmodule Retex.Node.BetaMemory do
   end
 
   defimpl Retex.Protocol.Activation do
-    def activate(
-          %Retex.Node.BetaMemory{} = neighbor,
-          %Retex{activations: activations} = rete,
-          wme,
-          bindings,
-          _tokens
-        ) do
-      with [_ | _] <- Map.get(activations, neighbor.left.id),
-           [_ | _] <- Map.get(activations, neighbor.right.id),
+    def activate(neighbor, rete, wme, bindings, _tokens) do
+      with true <- __MODULE__.active?(neighbor.left, rete),
+           true <- __MODULE__.active?(neighbor.right, rete),
            left_tokens <- Map.get(rete.tokens, neighbor.left.id),
            right_tokens <- Map.get(rete.tokens, neighbor.right.id),
            new_tokens <- matching_tokens(right_tokens, left_tokens),
@@ -56,6 +50,11 @@ defmodule Retex.Node.BetaMemory do
         Enum.reduce_while(right, true, fn {key, value}, true ->
           if Map.get(left, key, value) == value, do: {:cont, true}, else: {:halt, false}
         end)
+    end
+
+    @spec active?(%{id: any}, Retex.t()) :: boolean()
+    def active?(%{id: id}, %Retex{activations: activations}) do
+      not Enum.empty?(Map.get(activations, id, []))
     end
   end
 end
