@@ -34,4 +34,12 @@ defmodule Retex.Facts do
   def has_attribute(fields) do
     Fact.HasAttribute.new(fields)
   end
+
+  def unexistant_attribute(owner, attribute) do
+    unexistant_attribute(owner: owner, attribute: attribute)
+  end
+
+  def unexistant_attribute(fields) do
+    Fact.UnexistantAttribute.new(fields)
+  end
 end

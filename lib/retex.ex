@@ -119,6 +119,21 @@ defmodule Retex do
     {new_graph, [type_node | test_nodes]}
   end
 
+  def build_alpha_network(%Fact.UnexistantAttribute{} = condition, {graph, last_nodes}) do
+    %{attribute: attribute, owner: class} = condition
+    {type_node, _} = Node.Type.new(class)
+    {select_node, _} = Node.SelectNot.new(class, attribute)
+
+    new_graph =
+      graph
+      |> Graph.add_vertex(type_node)
+      |> Graph.add_edge(root_vertex(), type_node)
+      |> Graph.add_vertex(select_node)
+      |> Graph.add_edge(type_node, select_node)
+
+    {new_graph, [select_node | last_nodes]}
+  end
+
   def build_alpha_network(%Fact.HasAttribute{} = condition, {graph, test_nodes}) do
     %{attribute: attribute, owner: class, predicate: predicate, value: value} = condition
     condition_id = hash(condition)

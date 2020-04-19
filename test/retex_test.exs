@@ -144,6 +144,66 @@ defmodule RetexTest do
       assert [] == agenda
     end
 
+    test "apply inference with a negated attribute, when the negative node is active" do
+      given = [
+        isa("$thing", :Thing),
+        unexistant_attribute(:Thing, :status)
+      ]
+
+      action = [
+        Retex.Wme.new(:Thing, :status, 1)
+      ]
+
+      rule = create_rule(lhs: given, rhs: action)
+
+      wme = Retex.Wme.new(:Thing, :status, :gold)
+
+      network =
+        Retex.new()
+        |> Retex.add_production(rule)
+        |> Retex.add_wme(wme)
+
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert [] == agenda
+
+      wme_1 = Retex.Wme.new(:Thing, :id, 1)
+      network = Retex.add_wme(network, wme_1)
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert [] == agenda
+    end
+
+    test "apply inference with a negated attribute, when the negative node is not active" do
+      given = [
+        isa("$thing", :Thing),
+        unexistant_attribute(:Thing, :status)
+      ]
+
+      action = [
+        Retex.Wme.new(:Thing, :status, 1)
+      ]
+
+      rule = create_rule(lhs: given, rhs: action)
+
+      wme = Retex.Wme.new(:Thing, :id, 1)
+
+      network =
+        Retex.new()
+        |> Retex.add_production(rule)
+        |> Retex.add_wme(wme)
+
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert [[%Retex.Wme{attribute: :status, identifier: :Thing, value: 1}]] = agenda
+
+      wme_1 = Retex.Wme.new(:Thing, :status, :silver)
+      network = Retex.add_wme(network, wme_1)
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action))
+
+      assert [] == agenda
+    end
+
     test "apply inference with a negated condition, when the negative node is active" do
       given = [
         isa("$thing", :Thing),
