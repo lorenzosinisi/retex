@@ -107,6 +107,18 @@ defmodule Retex do
     {new_graph, [type_node | test_nodes]}
   end
 
+  def build_alpha_network(%Fact.IsNot{} = condition, {graph, test_nodes}) do
+    %{variable: _, type: type} = condition
+    {type_node, _} = Node.NegativeType.new(type)
+
+    new_graph =
+      graph
+      |> Graph.add_vertex(type_node)
+      |> Graph.add_edge(root_vertex(), type_node)
+
+    {new_graph, [type_node | test_nodes]}
+  end
+
   def build_alpha_network(%Fact.HasAttribute{} = condition, {graph, test_nodes}) do
     %{attribute: attribute, owner: class, predicate: predicate, value: value} = condition
     condition_id = hash(condition)

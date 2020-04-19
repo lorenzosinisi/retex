@@ -1,10 +1,10 @@
-defmodule Retex.Node.Type do
+defmodule Retex.Node.NegativeType do
   @moduledoc """
-  The NodeType if part of the alpha network, the discrimination part of the network
-  that check if a specific class exists. If this is the case, it propagates the activations
-  down to the select node types. They will select an attribute and check for its existance.
+  The NegativeNodeType if part of the alpha network, the discrimination part of the network
+  that check if a specific class DOES NOT exist. If this is the case, it propagates the activations
+  down to the select node types. They will select an attribute and check for its test to pass.
   """
-  defstruct type: :NodeType, class: nil, id: nil, bindings: %{}
+  defstruct type: :NegativeNodeType, class: nil, id: nil, bindings: %{}
   @type t :: %Retex.Node.Type{}
 
   def new(class, labels \\ []) do
@@ -14,7 +14,7 @@ defmodule Retex.Node.Type do
 
   defimpl Retex.Protocol.Activation do
     def activate(
-          %Retex.Node.Type{class: class} = neighbor,
+          %Retex.Node.NegativeType{class: class} = neighbor,
           %Retex{graph: _graph} = rete,
           %Retex.Wme{identifier: "$" <> _identifier = var} = wme,
           bindings,
@@ -29,7 +29,7 @@ defmodule Retex.Node.Type do
     end
 
     def activate(
-          %Retex.Node.Type{class: "$" <> _variable = var} = neighbor,
+          %Retex.Node.NegativeType{class: "$" <> _variable = var} = neighbor,
           %Retex{graph: _graph} = rete,
           %Retex.Wme{identifier: identifier} = wme,
           bindings,
@@ -42,7 +42,7 @@ defmodule Retex.Node.Type do
     end
 
     def activate(
-          %Retex.Node.Type{class: identifier} = neighbor,
+          %Retex.Node.NegativeType{class: identifier} = neighbor,
           %Retex{} = rete,
           %Retex.Wme{identifier: identifier} = wme,
           bindings,
@@ -55,7 +55,7 @@ defmodule Retex.Node.Type do
     end
 
     def activate(
-          %Retex.Node.Type{class: _class},
+          %Retex.Node.NegativeType{class: _class},
           %Retex{graph: _graph} = rete,
           %Retex.Wme{identifier: _identifier} = _wme,
           _bindings,
@@ -66,7 +66,7 @@ defmodule Retex.Node.Type do
 
     @spec active?(%{id: any}, Retex.t()) :: boolean()
     def active?(%{id: id}, %Retex{activations: activations}) do
-      not Enum.empty?(Map.get(activations, id, []))
+      Enum.empty?(Map.get(activations, id, []))
     end
   end
 end

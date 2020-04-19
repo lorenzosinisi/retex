@@ -46,7 +46,7 @@ defmodule Retex.Node.Test do
 
     @spec active?(%{id: any}, Retex.t()) :: boolean()
     def active?(%{id: id}, %Retex{activations: activations}) do
-      not Enum.empty?(Map.get(activations, id))
+      not Enum.empty?(Map.get(activations, id, []))
     end
   end
 end

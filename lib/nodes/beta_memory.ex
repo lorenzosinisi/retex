@@ -14,9 +14,11 @@ defmodule Retex.Node.BetaMemory do
   end
 
   defimpl Retex.Protocol.Activation do
+    alias Retex.Protocol.Activation
+
     def activate(neighbor, rete, wme, bindings, _tokens) do
-      with true <- __MODULE__.active?(neighbor.left, rete),
-           true <- __MODULE__.active?(neighbor.right, rete),
+      with true <- Activation.active?(neighbor.left, rete),
+           true <- Activation.active?(neighbor.right, rete),
            left_tokens <- Map.get(rete.tokens, neighbor.left.id),
            right_tokens <- Map.get(rete.tokens, neighbor.right.id),
            new_tokens <- matching_tokens(right_tokens, left_tokens),
@@ -26,10 +28,14 @@ defmodule Retex.Node.BetaMemory do
         |> Retex.add_token(neighbor, wme, bindings, new_tokens)
         |> Retex.continue_traversal(bindings, neighbor, wme)
       else
-        _ ->
+        anything ->
+          IO.inspect(anything)
           Retex.stop_traversal(rete, %{})
       end
     end
+
+    defp matching_tokens(left, nil), do: left
+    defp matching_tokens(nil, right), do: right
 
     defp matching_tokens(left, right) do
       for i <- left, j <- right do
