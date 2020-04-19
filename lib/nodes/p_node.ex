@@ -52,6 +52,10 @@ defmodule Retex.Node.PNode do
       end
     end
 
+    def active?(_, _) do
+      raise "Not implemented"
+    end
+
     def apply_filters(nodes, filters) do
       Enum.filter(nodes, fn node ->
         Enum.reduce_while(filters, true, fn filter, _ ->

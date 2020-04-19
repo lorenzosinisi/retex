@@ -2,7 +2,7 @@ defmodule Retex do
   @moduledoc false
 
   @type t() :: %Retex{}
-  alias Retex.{Node, Protocol, Fact, Token, Fact.Filter}
+  alias Retex.{Node, Protocol, Fact, Token}
 
   alias Node.{
     Type,
