@@ -340,12 +340,10 @@ defmodule Retex do
 
     Enum.reduce(children, rete, fn %type{} = vertex, network ->
       if type == Retex.Node.PNode do
-        new_network = %{
+        %{
           network
           | agenda: Enum.reject(network.agenda, fn pnode -> pnode.id == vertex.id end)
         }
-
-        deactivate_descendants(new_network, vertex)
       else
         new_network = %{network | activations: Map.put(activations, vertex.id, [])}
         deactivate_descendants(new_network, vertex)
