@@ -28,6 +28,23 @@ defmodule Retex.Node.Test do
     end
 
     def activate(
+          %Retex.Node.Test{class: [:in, value]} = neighbor,
+          %Retex{activations: _activations} = rete,
+          wme,
+          bindings,
+          tokens
+        ) do
+      if apply(Enum, :member?, [value, wme.value]) do
+        rete
+        |> Retex.create_activation(neighbor, wme)
+        |> Retex.add_token(neighbor, wme, bindings, tokens)
+        |> Retex.continue_traversal(bindings, neighbor, wme)
+      else
+        rete |> Retex.stop_traversal(%{})
+      end
+    end
+
+    def activate(
           %Retex.Node.Test{class: [operator, value]} = neighbor,
           %Retex{activations: _activations} = rete,
           wme,
