@@ -1,6 +1,7 @@
 defmodule Retex.MixProject do
   use Mix.Project
-  @version "0.1.7"
+  @version "0.1.8"
+
   def project do
     [
       app: :retex,
