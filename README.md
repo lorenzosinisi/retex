@@ -7,7 +7,7 @@
 Rete is a complex stateful algorithm, this is an attempt of reproducing it with a functional immutable language
 such as Elixir/Erlang. This is a boilerplate that will let you implement your own version of Rete starting from a baseline.
 
-Feel free to contact me via email if you have any question. 
+Feel free to contact me via email if you have any question. One example of usage of Retex can be found in [NeuralBridge](https://github.com/lorenzosinisi/neural_bridge)
 
 ## Concepts
 

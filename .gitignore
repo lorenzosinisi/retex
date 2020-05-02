@@ -25,3 +25,5 @@ rete_elixir-*.tar
 # Ignore elixir language server cache
 .elixir_ls/
 
+# DStore 
+.DS_Store
