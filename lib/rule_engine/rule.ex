@@ -1,20 +1,31 @@
 defmodule Retex.Rule do
   import Retex.Facts
-  defstruct [:given, :then]
+  defstruct [:id, :given, :then]
 
-  def new(given: given, then: then) do
-    %__MODULE__{
-      given: parse(given) |> interpret(),
-      then: parse(then) |> interpret()
-    }
+  def new(id: id, given: given, then: then) when is_binary(given) and is_binary(then) do
+    with {:ok, given} <- to_production(given),
+         {:ok, then} <- to_production(then) do
+      %__MODULE__{id: id, given: given, then: then}
+    end
   end
 
-  def parse(str) do
-    {:ok, ast} = Sanskrit.parse(str)
-    ast
+  def new(id: id, given: given, then: then) when is_binary(given) and is_function(then) do
+    with {:ok, given} <- to_production(given) do
+      %__MODULE__{id: id, given: given, then: then}
+    end
   end
 
-  def interpret(ast) when is_list(ast) do
+  defp to_production(conditions) when is_binary(conditions) do
+    with {:ok, ast} <- parse(conditions) do
+      {:ok, interpret(ast)}
+    end
+  end
+
+  defp parse(str) do
+    Sanskrit.parse(str)
+  end
+
+  defp interpret(ast) when is_list(ast) do
     for node <- ast, do: do_interpret(node)
   end
 

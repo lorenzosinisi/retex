@@ -43,12 +43,30 @@ defmodule Retex.RuleEngine do
 
   def apply_rule(
         session = %__MODULE__{rules_fired: rules_fired},
+        rule = %{action: function, bindings: bindings}
+      )
+      when is_function(function) do
+    do_apply_rule({session, bindings}, function, rule)
+    %{session | rules_fired: List.flatten([rule | rules_fired])}
+  end
+
+  def apply_rule(
+        session = %__MODULE__{rules_fired: rules_fired},
         rule = %{action: actions, bindings: bindings}
       ) do
     {updated_session, _bindings} =
       Enum.reduce(actions, {session, bindings}, &do_apply_rule(&2, &1, rule))
 
     %{updated_session | rules_fired: List.flatten([rule | rules_fired])}
+  end
+
+  defp do_apply_rule(
+         {_session = %__MODULE__{}, _bindings},
+         function,
+         rule = %{}
+       )
+       when is_function(function, 1) do
+    function.(rule)
   end
 
   defp do_apply_rule(

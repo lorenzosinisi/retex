@@ -47,14 +47,14 @@ defmodule Retex do
   end
 
   @spec add_production(Retex.t(), %{given: list(Retex.Wme.t()), then: action()}) :: t()
-  def add_production(%{graph: graph} = network, %{given: given, then: action}) do
+  def add_production(%{graph: graph} = network, %{given: given, then: action} = rule) do
     {filters, given} = split_conditions_from_filters(given)
 
     {graph, alphas} =
       given |> Enum.reverse() |> Enum.reduce({graph, []}, &build_alpha_network(&1, &2))
 
     {beta_memory, graph} = build_beta_network(graph, alphas)
-    graph = add_p_node(graph, beta_memory, action, filters)
+    graph = add_p_node(Map.get(rule, :id), graph, beta_memory, action, filters)
     %{network | graph: graph}
   end
 
@@ -85,10 +85,11 @@ defmodule Retex do
     {beta_memory, graph}
   end
 
-  @spec add_p_node(Graph.t(), BetaMemory.t(), action(), list(Fact.Filter.t())) :: Graph.t()
-  def add_p_node(graph, beta_memory, action, filters) do
+  @spec add_p_node(any, Graph.t(), BetaMemory.t(), action(), list(Fact.Filter.t())) :: Graph.t()
+  def add_p_node(id, graph, beta_memory, action, filters) do
     {pnode, _} = Node.PNode.new(action, filters)
-    graph |> Graph.add_vertex(pnode) |> Graph.add_edge(beta_memory, pnode)
+    prod = if id, do: Map.put(pnode, :id, id), else: pnode
+    graph |> Graph.add_vertex(prod) |> Graph.add_edge(beta_memory, prod)
   end
 
   @spec build_alpha_network(
@@ -232,7 +233,8 @@ defmodule Retex do
     %{pnode | action: new_actions, bindings: bindings}
   end
 
-  def replace_bindings(%_{action: actions} = pnode, {_, _, bindings}) when is_map(bindings) do
+  def replace_bindings(%_{action: actions} = pnode, {_, _, bindings})
+      when is_map(bindings) and is_list(actions) do
     new_actions =
       Enum.map(actions, fn action ->
         case action do
@@ -258,6 +260,11 @@ defmodule Retex do
       end)
 
     %{pnode | action: new_actions, bindings: bindings}
+  end
+
+  def replace_bindings(%_{action: action_fun} = pnode, {_, _, bindings})
+      when is_function(action_fun) do
+    %{pnode | action: action_fun, bindings: bindings}
   end
 
   @spec add_token(Retex.t(), network_node(), Retex.Wme.t(), map, list(Retex.Token.t())) ::
