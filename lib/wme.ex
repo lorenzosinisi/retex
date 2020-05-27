@@ -17,9 +17,15 @@ defmodule Retex.Wme do
         }
 
   defstruct identifier: nil, attribute: nil, value: nil, id: nil, timestamp: nil
+  alias Retex.Fact.HasAttribute
 
   def new(id, attr, val) do
     item = %__MODULE__{identifier: id, attribute: attr, value: val}
     Map.put(item, :id, Retex.hash(item))
+  end
+
+  def to_has_attribute(%Retex.Wme{} = wme) do
+    %__MODULE__{identifier: id, attribute: attr, value: val} = wme
+    HasAttribute.new(owner: id, attribute: attr, predicate: :==, value: val)
   end
 end
