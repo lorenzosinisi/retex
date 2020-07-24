@@ -18,7 +18,7 @@ defmodule Retex.Node.PNode do
           _bindings,
           _tokens
         ) do
-      # A production node has only one parent
+      # A production node has only one parent, right?
       [parent | _] =
         parents =
         Graph.in_neighbors(graph, neighbor)

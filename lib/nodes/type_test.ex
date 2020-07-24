@@ -19,12 +19,10 @@ defmodule Retex.Node.Test do
           bindings,
           tokens
         ) do
-      key = var
-
       rete
       |> Retex.create_activation(neighbor, wme)
-      |> Retex.add_token(neighbor, wme, Map.merge(bindings, %{key => value}), tokens)
-      |> Retex.continue_traversal(Map.merge(bindings, %{key => value}), neighbor, wme)
+      |> Retex.add_token(neighbor, wme, Map.merge(bindings, %{var => value}), tokens)
+      |> Retex.continue_traversal(Map.merge(bindings, %{var => value}), neighbor, wme)
     end
 
     def activate(
@@ -40,7 +38,7 @@ defmodule Retex.Node.Test do
         |> Retex.add_token(neighbor, wme, bindings, tokens)
         |> Retex.continue_traversal(bindings, neighbor, wme)
       else
-        rete |> Retex.stop_traversal(%{})
+        Retex.stop_traversal(rete, %{})
       end
     end
 
@@ -57,7 +55,7 @@ defmodule Retex.Node.Test do
         |> Retex.add_token(neighbor, wme, bindings, tokens)
         |> Retex.continue_traversal(bindings, neighbor, wme)
       else
-        rete |> Retex.stop_traversal(%{})
+        Retex.stop_traversal(rete, %{})
       end
     end
 
