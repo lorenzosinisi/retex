@@ -17,7 +17,9 @@ Rete is a complex stateful algorithm, this is an attempt of reproducing it with 
 ## TODO
 
 [ ] Optimize the amount of memory used by production nodes
+
 [ ] Add tests for variables of the same name in different rules (it should work, right now it isnt)
+
 [ ] Improve performances and extend the facts to handle more complex cases such as relationships between WMEs
 
 # Example
