@@ -49,19 +49,22 @@ defmodule Retex do
   @spec add_production(Retex.t(), %{given: list(Retex.Wme.t()), then: action()}) :: t()
   def add_production(%{graph: graph} = network, %{given: given, then: action} = rule) do
     {filters, given} = Enum.split_with(given, &is_filter?/1)
-
-    {graph, alphas} =
-      given
-      |> Enum.reverse()
-      |> Enum.reduce({graph, []}, &Retex.Protocol.AlphaNetwork.append(&1, &2))
-
+    {graph, alphas} = build_alpha_network(graph, given)
     {beta_memory, graph} = build_beta_network(graph, alphas)
     graph = add_p_node(Map.get(rule, :id), graph, beta_memory, action, filters)
+
     %{network | graph: graph}
   end
 
   defp is_filter?(%Fact.Filter{}), do: true
   defp is_filter?(_), do: false
+
+  @spec build_alpha_network(Graph.t(), list()) :: {Graph.t(), list()}
+  def build_alpha_network(graph, given) do
+    given
+    |> Enum.reverse()
+    |> Enum.reduce({graph, []}, &Retex.Protocol.AlphaNetwork.append(&1, &2))
+  end
 
   @spec build_beta_network(Graph.t(), list(network_node())) :: {list(network_node()), Graph.t()}
   def build_beta_network(graph, disjoint_beta_network) do
@@ -90,19 +93,6 @@ defmodule Retex do
     graph |> Graph.add_vertex(prod) |> Graph.add_edge(beta_memory, prod)
   end
 
-  @spec print(%{graph: Graph.t()}) :: Retex.t()
-  def print(%{graph: graph} = network) do
-    with {:ok, graph} <- Graph.to_dot(graph) do
-      IO.write("\n")
-      IO.write("\n")
-      IO.puts(graph)
-      IO.write("\n")
-      IO.write("\n")
-    end
-
-    network
-  end
-
   @spec hash(any) :: String.t()
   def hash(:uuid4), do: UUIDTools.uuid4()
 
@@ -114,93 +104,47 @@ defmodule Retex do
 
   @spec replace_bindings(PNode.t(), map) :: PNode.t()
   def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
-    new_actions =
-      Enum.map(actions, fn action ->
-        case action do
-          action when is_tuple(action) ->
-            List.to_tuple(
-              for element <- Tuple.to_list(action) do
-                if is_binary(element), do: Map.get(bindings, element, element), else: element
-              end
-            )
+    new_actions = Enum.map(actions, fn action -> replace_bindings(action, bindings) end)
+    %{pnode | action: new_actions, bindings: bindings}
+  end
 
-          %Retex.Wme{} = action ->
-            populated =
-              for {key, val} <- Map.from_struct(action), into: %{} do
-                val = Map.get(bindings, val, val)
-                {key, val}
-              end
+  def replace_bindings(%Retex.Wme{} = action, bindings) when is_map(bindings) do
+    populated =
+      for {key, val} <- Map.from_struct(action), into: %{} do
+        val = Map.get(bindings, val, val)
+        {key, val}
+      end
 
-            struct(Retex.Wme, populated)
+    struct(Retex.Wme, populated)
+  end
 
-          anything ->
-            anything
-        end
-      end)
+  def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
+    new_actions = Enum.map(actions, fn action -> replace_bindings(action, bindings) end)
 
     %{pnode | action: new_actions, bindings: bindings}
   end
 
-  def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
-    new_actions =
-      Enum.map(actions, fn action ->
-        case action do
-          action when is_tuple(action) ->
-            List.to_tuple(
-              for element <- Tuple.to_list(action) do
-                if is_binary(element), do: Map.get(bindings, element, element), else: element
-              end
-            )
-
-          %Retex.Wme{} = action ->
-            populated =
-              for {key, val} <- Map.from_struct(action), into: %{} do
-                val = Map.get(bindings, val, val)
-                {key, val}
-              end
-
-            struct(Retex.Wme, populated)
-
-          anything ->
-            anything
-        end
-      end)
-
-    %{pnode | action: new_actions, bindings: bindings}
+  def replace_bindings(tuple, bindings) when is_map(bindings) do
+    List.to_tuple(
+      for element <- Tuple.to_list(tuple) do
+        if is_binary(element), do: Map.get(bindings, element, element), else: element
+      end
+    )
   end
 
   def replace_bindings(%_{action: actions} = pnode, {_, _, bindings})
       when is_map(bindings) and is_list(actions) do
-    new_actions =
-      Enum.map(actions, fn action ->
-        case action do
-          action when is_tuple(action) ->
-            List.to_tuple(
-              for element <- Tuple.to_list(action) do
-                if is_binary(element), do: Map.get(bindings, element, element), else: element
-              end
-            )
-
-          %Retex.Wme{} = action ->
-            populated =
-              for {key, val} <- Map.from_struct(action), into: %{} do
-                val = Map.get(bindings, val, val)
-                {key, val}
-              end
-
-            struct(Retex.Wme, populated)
-
-          anything ->
-            anything
-        end
-      end)
-
+    new_actions = Enum.map(actions, fn action -> replace_bindings(action, bindings) end)
     %{pnode | action: new_actions, bindings: bindings}
   end
 
   def replace_bindings(%_{action: action_fun} = pnode, {_, _, bindings})
       when is_function(action_fun) do
     %{pnode | action: action_fun, bindings: bindings}
+  end
+
+  def replace_bindings(anything, _bindings) do
+    anything
   end
 
   @spec add_token(Retex.t(), network_node(), Retex.Wme.t(), map, list(Retex.Token.t())) ::
@@ -213,10 +157,9 @@ defmodule Retex do
         [_ | _] = tokens
       ) do
     node_tokens = Map.get(rete_tokens, current_node.id, [])
-
     all_tokens = Enum.uniq(node_tokens ++ tokens)
-
     new_tokens = Map.put(rete_tokens, current_node.id, all_tokens)
+
     %{rete | tokens: new_tokens}
   end
 
@@ -262,31 +205,29 @@ defmodule Retex do
           list(Retex.Token.t())
         ) :: {Retex.t(), map}
   def propagate_activations(
-        %Retex{} = rete,
+        %Retex{graph: graph} = rete,
         %{} = current_node,
         %Retex.Wme{} = wme,
         bindings,
         new_tokens
       ) do
-    %{graph: graph} = rete
-    children = Graph.out_neighbors(graph, current_node)
-
-    Enum.reduce(children, {rete, bindings}, fn vertex, {network, bindings} ->
+    graph
+    |> Graph.out_neighbors(current_node)
+    |> Enum.reduce({rete, bindings}, fn vertex, {network, bindings} ->
       propagate_activation(vertex, network, wme, bindings, new_tokens)
     end)
   end
 
   @spec propagate_activations(Retex.t(), network_node(), Retex.Wme.t(), map) :: {Retex.t(), map}
   def propagate_activations(
-        %Retex{} = rete,
+        %Retex{graph: graph} = rete,
         %{} = current_node,
         %Retex.Wme{} = wme,
         bindings
       ) do
-    %{graph: graph} = rete
-    children = Graph.out_neighbors(graph, current_node)
-
-    Enum.reduce(children, {rete, bindings}, fn vertex, {network, bindings} ->
+    graph
+    |> Graph.out_neighbors(current_node)
+    |> Enum.reduce({rete, bindings}, fn vertex, {network, bindings} ->
       propagate_activation(vertex, network, wme, bindings)
     end)
   end
@@ -318,7 +259,6 @@ defmodule Retex do
         %Retex.Wme{} = wme,
         tokens
       ) do
-    {new_rete, new_bindings}
     propagate_activations(new_rete, current_node, wme, new_bindings, tokens)
   end
 
@@ -329,7 +269,6 @@ defmodule Retex do
         %_{} = current_node,
         %Retex.Wme{} = wme
       ) do
-    {new_rete, new_bindings}
     propagate_activations(new_rete, current_node, wme, new_bindings)
   end
 
