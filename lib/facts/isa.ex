@@ -11,4 +11,20 @@ defmodule Retex.Fact.Isa do
   def new(fields) do
     struct(__MODULE__, fields)
   end
+
+  defimpl Retex.Protocol.AlphaNetwork do
+    alias Retex.Fact.Isa
+
+    def append(%Isa{} = condition, {graph, test_nodes}) do
+      %{variable: _, type: type} = condition
+      {type_node, _} = Retex.Node.Type.new(type)
+
+      new_graph =
+        graph
+        |> Graph.add_vertex(type_node)
+        |> Graph.add_edge(Retex.root_vertex(), type_node)
+
+      {new_graph, [type_node | test_nodes]}
+    end
+  end
 end

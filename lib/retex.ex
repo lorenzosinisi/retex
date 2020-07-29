@@ -48,18 +48,16 @@ defmodule Retex do
 
   @spec add_production(Retex.t(), %{given: list(Retex.Wme.t()), then: action()}) :: t()
   def add_production(%{graph: graph} = network, %{given: given, then: action} = rule) do
-    {filters, given} = split_conditions_from_filters(given)
+    {filters, given} = Enum.split_with(given, &is_filter?/1)
 
     {graph, alphas} =
-      given |> Enum.reverse() |> Enum.reduce({graph, []}, &build_alpha_network(&1, &2))
+      given
+      |> Enum.reverse()
+      |> Enum.reduce({graph, []}, &Retex.Protocol.AlphaNetwork.append(&1, &2))
 
     {beta_memory, graph} = build_beta_network(graph, alphas)
     graph = add_p_node(Map.get(rule, :id), graph, beta_memory, action, filters)
     %{network | graph: graph}
-  end
-
-  defp split_conditions_from_filters(given) do
-    Enum.split_with(given, &is_filter?/1)
   end
 
   defp is_filter?(%Fact.Filter{}), do: true
@@ -90,68 +88,6 @@ defmodule Retex do
     {pnode, _} = Node.PNode.new(action, filters)
     prod = if id, do: Map.put(pnode, :id, id), else: pnode
     graph |> Graph.add_vertex(prod) |> Graph.add_edge(beta_memory, prod)
-  end
-
-  @spec build_alpha_network(
-          Fact.Isa.t() | Fact.HasAttribute.t(),
-          {Graph.t(), list(network_node())}
-        ) :: {Graph.t(), list(network_node())}
-  def build_alpha_network(%Fact.Isa{} = condition, {graph, test_nodes}) do
-    %{variable: _, type: type} = condition
-    {type_node, _} = Node.Type.new(type)
-
-    new_graph =
-      graph
-      |> Graph.add_vertex(type_node)
-      |> Graph.add_edge(root_vertex(), type_node)
-
-    {new_graph, [type_node | test_nodes]}
-  end
-
-  def build_alpha_network(%Fact.IsNot{} = condition, {graph, test_nodes}) do
-    %{variable: _, type: type} = condition
-    {type_node, _} = Node.NegativeType.new(type)
-
-    new_graph =
-      graph
-      |> Graph.add_vertex(type_node)
-      |> Graph.add_edge(root_vertex(), type_node)
-
-    {new_graph, [type_node | test_nodes]}
-  end
-
-  def build_alpha_network(%Fact.UnexistantAttribute{} = condition, {graph, last_nodes}) do
-    %{attribute: attribute, owner: class} = condition
-    {type_node, _} = Node.Type.new(class)
-    {select_node, _} = Node.SelectNot.new(class, attribute)
-
-    new_graph =
-      graph
-      |> Graph.add_vertex(type_node)
-      |> Graph.add_edge(root_vertex(), type_node)
-      |> Graph.add_vertex(select_node)
-      |> Graph.add_edge(type_node, select_node)
-
-    {new_graph, [select_node | last_nodes]}
-  end
-
-  def build_alpha_network(%Fact.HasAttribute{} = condition, {graph, test_nodes}) do
-    %{attribute: attribute, owner: class, predicate: predicate, value: value} = condition
-    condition_id = hash(condition)
-    {type_node, _} = Node.Type.new(class)
-    {select_node, _} = Node.Select.new(class, attribute)
-    {test_node, _} = Node.Test.new([predicate, value], condition_id)
-
-    new_graph =
-      graph
-      |> Graph.add_vertex(type_node)
-      |> Graph.add_edge(root_vertex(), type_node)
-      |> Graph.add_vertex(select_node)
-      |> Graph.add_edge(type_node, select_node)
-      |> Graph.add_vertex(test_node)
-      |> Graph.add_edge(select_node, test_node)
-
-    {new_graph, [test_node | test_nodes]}
   end
 
   @spec print(%{graph: Graph.t()}) :: Retex.t()

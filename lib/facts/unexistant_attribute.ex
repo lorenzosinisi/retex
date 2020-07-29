@@ -15,4 +15,23 @@ defmodule Retex.Fact.UnexistantAttribute do
   def new(fields) do
     struct(__MODULE__, fields)
   end
+
+  defimpl Retex.Protocol.AlphaNetwork do
+    alias Retex.{Fact, Node}
+
+    def append(%Fact.UnexistantAttribute{} = condition, {graph, nodes}) do
+      %{attribute: attribute, owner: class} = condition
+      {type_node, _} = Node.Type.new(class)
+      {negative_select_node, _} = Node.SelectNot.new(class, attribute)
+
+      new_graph =
+        graph
+        |> Graph.add_vertex(type_node)
+        |> Graph.add_edge(Retex.root_vertex(), type_node)
+        |> Graph.add_vertex(negative_select_node)
+        |> Graph.add_edge(type_node, negative_select_node)
+
+      {new_graph, [negative_select_node | nodes]}
+    end
+  end
 end
