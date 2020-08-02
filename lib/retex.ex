@@ -124,7 +124,7 @@ defmodule Retex do
     %{pnode | action: new_actions, bindings: bindings}
   end
 
-  def replace_bindings(tuple, bindings) when is_map(bindings) do
+  def replace_bindings(tuple, bindings) when is_map(bindings) and is_tuple(tuple) do
     List.to_tuple(
       for element <- Tuple.to_list(tuple) do
         if is_binary(element), do: Map.get(bindings, element, element), else: element
