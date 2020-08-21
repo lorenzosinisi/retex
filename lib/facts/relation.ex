@@ -7,4 +7,10 @@ defmodule Retex.Fact.Relation do
     rel = struct(__MODULE__, fields)
     Map.put(rel, :via, via)
   end
+
+  defimpl Inspect do
+    def inspect(vertex, _opts) do
+      "Relation(#{vertex.from}, #{vertex.via}, #{vertex.to})"
+    end
+  end
 end

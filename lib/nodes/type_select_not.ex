@@ -41,4 +41,10 @@ defmodule Retex.Node.SelectNot do
       Enum.empty?(Map.get(activations, id, []))
     end
   end
+
+  defimpl Inspect do
+    def inspect(node, _opts) do
+      "SelectNotNode(#{inspect(node.class)}, #{inspect(node.parent)})"
+    end
+  end
 end

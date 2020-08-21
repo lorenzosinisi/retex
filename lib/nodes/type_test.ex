@@ -64,4 +64,10 @@ defmodule Retex.Node.Test do
       not Enum.empty?(Map.get(activations, id, []))
     end
   end
+
+  defimpl Inspect do
+    def inspect(%{class: [operator, value]}, _opts) do
+      "#{operator} #{value}"
+    end
+  end
 end

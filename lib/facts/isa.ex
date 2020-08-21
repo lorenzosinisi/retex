@@ -27,4 +27,10 @@ defmodule Retex.Fact.Isa do
       {new_graph, [type_node | test_nodes]}
     end
   end
+
+  defimpl Inspect do
+    def inspect(vertex, _opts) do
+      "Isa($#{vertex.variable}, #{vertex.type})"
+    end
+  end
 end

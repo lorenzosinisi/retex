@@ -42,4 +42,10 @@ defmodule Retex.Fact.HasAttribute do
       {new_graph, [test_node | test_nodes]}
     end
   end
+
+  defimpl Inspect do
+    def inspect(vertex, _opts) do
+      "HasAttribute(#{vertex.owner}, #{vertex.attribute}, #{vertex.predicate}, #{vertex.value})"
+    end
+  end
 end

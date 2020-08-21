@@ -75,4 +75,10 @@ defmodule Retex.Node.PNode do
       end
     end
   end
+
+  defimpl Inspect do
+    def inspect(node, _opts) do
+      "PNode(#{inspect(node.action)})"
+    end
+  end
 end

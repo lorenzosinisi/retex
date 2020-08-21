@@ -23,4 +23,10 @@ defmodule Retex.Root do
 
     def active?(_node, _rete), do: true
   end
+
+  defimpl Inspect do
+    def inspect(_node, _opts) do
+      "Root()"
+    end
+  end
 end

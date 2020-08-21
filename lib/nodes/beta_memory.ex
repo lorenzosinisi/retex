@@ -62,4 +62,10 @@ defmodule Retex.Node.BetaMemory do
       not Enum.empty?(Map.get(activations, id, []))
     end
   end
+
+  defimpl Inspect do
+    def inspect(node, _opts) do
+      "#{inspect(node.left)} JOIN #{inspect(node.right)})"
+    end
+  end
 end
