@@ -73,7 +73,7 @@ defmodule Retex do
 
   @spec create_beta_nodes(Graph.t(), list(network_node())) :: {list(network_node()), Graph.t()}
   def create_beta_nodes(graph, [first | [second | list]]) do
-    {beta_memory, _} = Node.BetaMemory.new(first, second)
+    beta_memory = Node.BetaMemory.new(first, second)
 
     graph
     |> Graph.add_vertex(beta_memory)
@@ -88,7 +88,7 @@ defmodule Retex do
 
   @spec add_p_node(any, Graph.t(), BetaMemory.t(), action(), list(Fact.Filter.t())) :: Graph.t()
   def add_p_node(id, graph, beta_memory, action, filters) do
-    {pnode, _} = Node.PNode.new(action, filters)
+    pnode = Node.PNode.new(action, filters)
     prod = if id, do: Map.put(pnode, :id, id), else: pnode
     graph |> Graph.add_vertex(prod) |> Graph.add_edge(beta_memory, prod)
   end

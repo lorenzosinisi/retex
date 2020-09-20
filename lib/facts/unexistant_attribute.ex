@@ -21,8 +21,8 @@ defmodule Retex.Fact.UnexistantAttribute do
 
     def append(%Fact.UnexistantAttribute{} = condition, {graph, nodes}) do
       %{attribute: attribute, owner: class} = condition
-      {type_node, _} = Node.Type.new(class)
-      {negative_select_node, _} = Node.SelectNot.new(class, attribute)
+      type_node = Node.Type.new(class)
+      negative_select_node = Node.SelectNot.new(class, attribute)
 
       new_graph =
         graph

@@ -6,10 +6,10 @@ defmodule Retex.Node.Test do
   a specific condition. If this is the case, we activate this node and pass the token down
   to the beta network.
   """
-  defstruct type: :NodeTest, class: nil, id: nil, bindings: %{}
+  defstruct class: nil, id: nil
   @type t :: %Retex.Node.Test{}
 
-  def new(class, id, labels \\ []), do: {%__MODULE__{class: class, id: id}, labels}
+  def new(class, id), do: %__MODULE__{class: class, id: id}
 
   defimpl Retex.Protocol.Activation do
     def activate(
@@ -66,8 +66,8 @@ defmodule Retex.Node.Test do
   end
 
   defimpl Inspect do
-    def inspect(%{class: [operator, value]}, _opts) do
-      "#{operator} #{value}"
+    def inspect(%{id: id, class: [operator, value]}, _opts) do
+      "#{operator} #{value} (#{id})"
     end
   end
 end

@@ -17,7 +17,7 @@ defmodule Retex.Fact.IsNot do
 
     def append(%IsNot{} = condition, {graph, test_nodes}) do
       %{variable: _, type: type} = condition
-      {type_node, _} = Retex.Node.NegativeType.new(type)
+      type_node = Retex.Node.NegativeType.new(type)
 
       new_graph =
         graph

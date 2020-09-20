@@ -286,6 +286,19 @@ defmodule RetexTest do
 
       rule_2 = create_rule(lhs: given_2, rhs: action_2)
 
+      given_3 = [
+        has_attribute(:Account, :status, :==, "$a"),
+        has_attribute(:Account, :premium, :==, true),
+        has_attribute(:AccountB, :status, :==, "$a_a"),
+        has_attribute(:AccountB, :premium, :==, true)
+      ]
+
+      action_3 = [
+        {"$thing_3", :account_status, "$a_3"}
+      ]
+
+      rule_3 = create_rule(lhs: given_3, rhs: action_3)
+
       wme = Retex.Wme.new(:Account, :status, :silver)
       wme_2 = Retex.Wme.new(:Account, :premium, true)
       wme_3 = Retex.Wme.new(:Family, :size, 10)
@@ -294,6 +307,7 @@ defmodule RetexTest do
         Retex.new()
         |> Retex.add_production(rule)
         |> Retex.add_production(rule_2)
+        |> Retex.add_production(rule_3)
         |> Retex.add_wme(wme)
         |> Retex.add_wme(wme_2)
         |> Retex.add_wme(wme_3)
@@ -310,6 +324,18 @@ defmodule RetexTest do
                  }
                ]
              ] = agenda
+
+      wme_4 = Retex.Wme.new(:AccountB, :premium, true)
+      wme_5 = Retex.Wme.new(:AccountB, :status, true)
+
+      network =
+        network
+        |> Retex.add_wme(wme_4)
+        |> Retex.add_wme(wme_5)
+
+      agenda = network.agenda |> Enum.map(&Map.get(&1, :action)) |> Enum.count()
+
+      assert 3 == agenda
     end
 
     test "return only the bindings of the fully activated rule" do

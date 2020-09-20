@@ -5,22 +5,24 @@ defmodule Retex.Node.BetaMemory do
   happens if the two parents (left and right) have been activated and the bindings
   are matching for both of them.
   """
-  defstruct type: :BetaMemory, left: nil, right: nil, id: nil, bindings: %{}
+  defstruct id: nil
   @type t :: %Retex.Node.BetaMemory{}
 
-  def new(left, right, labels \\ []) do
-    item = %__MODULE__{left: left, right: right}
-    {%{item | id: Retex.hash(item)}, labels}
+  def new(left, right) do
+    id = Retex.hash({left, right})
+    %__MODULE__{id: id}
   end
 
   defimpl Retex.Protocol.Activation do
     alias Retex.Protocol.Activation
 
     def activate(neighbor, rete, wme, bindings, _tokens) do
-      with true <- Activation.active?(neighbor.left, rete),
-           true <- Activation.active?(neighbor.right, rete),
-           left_tokens <- Map.get(rete.tokens, neighbor.left.id),
-           right_tokens <- Map.get(rete.tokens, neighbor.right.id),
+      [left, right] = Graph.in_neighbors(rete.graph, neighbor)
+
+      with true <- Activation.active?(left, rete),
+           true <- Activation.active?(right, rete),
+           left_tokens <- Map.get(rete.tokens, left.id),
+           right_tokens <- Map.get(rete.tokens, right.id),
            new_tokens <- matching_tokens(right_tokens, left_tokens),
            true <- Enum.any?(new_tokens) do
         rete
@@ -65,7 +67,7 @@ defmodule Retex.Node.BetaMemory do
 
   defimpl Inspect do
     def inspect(node, _opts) do
-      "#{inspect(node.left)} JOIN #{inspect(node.right)})"
+      "Join(#{node.id})"
     end
   end
 end

@@ -4,12 +4,12 @@ defmodule Retex.Node.Type do
   that check if a specific class exists. If this is the case, it propagates the activations
   down to the select node types. They will select an attribute and check for its existance.
   """
-  defstruct type: :NodeType, class: nil, id: nil, bindings: %{}
+  defstruct class: nil, id: nil
   @type t :: %Retex.Node.Type{}
 
-  def new(class, labels \\ []) do
+  def new(class) do
     item = %__MODULE__{class: class}
-    {%{item | id: Retex.hash(item)}, labels}
+    %{item | id: Retex.hash(item)}
   end
 
   defimpl Retex.Protocol.Activation do

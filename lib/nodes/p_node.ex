@@ -3,11 +3,11 @@ defmodule Retex.Node.PNode do
   Production node. This is like a production node in Rete algorithm. It is activated if all
   the conditions in a rule are matching and contains the action that can be executed as consequence.
   """
-  defstruct type: :PNode, action: nil, id: nil, raw_action: nil, bindings: %{}, filters: []
+  defstruct action: nil, id: nil, raw_action: nil, bindings: %{}, filters: []
 
-  def new(action, filters \\ [], labels \\ []) do
+  def new(action, filters \\ []) do
     item = %__MODULE__{action: action, raw_action: action, filters: filters}
-    {%{item | id: Retex.hash(item)}, labels}
+    %{item | id: Retex.hash(item)}
   end
 
   defimpl Retex.Protocol.Activation do

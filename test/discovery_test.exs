@@ -30,7 +30,6 @@ defmodule Retex.DiscoveryTest do
       Retex.add_production(Retex.new(), rule) |> Retex.add_wme(wme) |> Retex.add_wme(wme_2)
 
     action = network.agenda |> List.first()
-
     assert 2 == Enum.count(Why.explain(network, action) |> Map.get(:paths))
   end
 end

@@ -26,9 +26,9 @@ defmodule Retex.Fact.HasAttribute do
     def append(%HasAttribute{} = condition, {graph, test_nodes}) do
       %{attribute: attribute, owner: class, predicate: predicate, value: value} = condition
       condition_id = Retex.hash(condition)
-      {type_node, _} = Node.Type.new(class)
-      {select_node, _} = Node.Select.new(class, attribute)
-      {test_node, _} = Node.Test.new([predicate, value], condition_id)
+      type_node = Node.Type.new(class)
+      select_node = Node.Select.new(class, attribute)
+      test_node = Node.Test.new([predicate, value], condition_id)
 
       new_graph =
         graph

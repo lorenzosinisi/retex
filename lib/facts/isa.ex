@@ -17,7 +17,7 @@ defmodule Retex.Fact.Isa do
 
     def append(%Isa{} = condition, {graph, test_nodes}) do
       %{variable: _, type: type} = condition
-      {type_node, _} = Retex.Node.Type.new(type)
+      type_node = Retex.Node.Type.new(type)
 
       new_graph =
         graph

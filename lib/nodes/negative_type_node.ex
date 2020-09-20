@@ -4,12 +4,12 @@ defmodule Retex.Node.NegativeType do
   that check if a specific class DOES NOT exist. If this is the case, it propagates the activations
   down to the select node types. They will select an attribute and check for its test to pass.
   """
-  defstruct type: :NegativeNodeType, class: nil, id: nil, bindings: %{}
+  defstruct class: nil, id: nil
   @type t :: %Retex.Node.Type{}
 
-  def new(class, labels \\ []) do
+  def new(class) do
     item = %__MODULE__{class: class}
-    {%{item | id: Retex.hash(item)}, labels}
+    %{item | id: Retex.hash(item)}
   end
 
   defimpl Retex.Protocol.Activation do

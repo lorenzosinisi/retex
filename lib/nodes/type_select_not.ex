@@ -3,12 +3,12 @@ defmodule Retex.Node.SelectNot do
   The select nodes are checking for attributes, if they do NOT exists and are linked to the
   right owner from above, they will be activated and pass the tokens down
   """
-  defstruct type: :NodeSelectNot, class: nil, id: nil, bindings: %{}, parent: nil
+  defstruct class: nil, id: nil, bindings: %{}, parent: nil
   @type t() :: %Retex.Node.SelectNot{}
 
-  def new(parent, class, labels \\ []) do
+  def new(parent, class) do
     item = %__MODULE__{class: class, parent: parent}
-    {%{item | id: Retex.hash(item)}, labels}
+    %{item | id: Retex.hash(item)}
   end
 
   defimpl Retex.Protocol.Activation do
