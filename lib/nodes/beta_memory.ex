@@ -8,9 +8,8 @@ defmodule Retex.Node.BetaMemory do
   defstruct id: nil
   @type t :: %Retex.Node.BetaMemory{}
 
-  def new(left, right) do
-    id = Retex.hash({left, right})
-    %__MODULE__{id: id}
+  def new() do
+    %__MODULE__{id: Retex.hash(:uuid4)}
   end
 
   defimpl Retex.Protocol.Activation do

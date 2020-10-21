@@ -73,7 +73,7 @@ defmodule Retex do
 
   @spec create_beta_nodes(Graph.t(), list(network_node())) :: {list(network_node()), Graph.t()}
   def create_beta_nodes(graph, [first | [second | list]]) do
-    beta_memory = Node.BetaMemory.new(first, second)
+    beta_memory = Node.BetaMemory.new()
 
     graph
     |> Graph.add_vertex(beta_memory)

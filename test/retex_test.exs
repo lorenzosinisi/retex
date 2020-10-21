@@ -11,29 +11,6 @@ defmodule RetexTest do
     }
   end
 
-  test "add duplicated production, does not duplicate data" do
-    given = [
-      has_attribute(:Account, :status, :==, "silver"),
-      has_attribute(:Account, :status, :!=, "outdated"),
-      has_attribute(:Flight, :partner, :!=, true)
-    ]
-
-    action = [
-      {:concession, 50}
-    ]
-
-    rule = create_rule(lhs: given, rhs: action)
-    network = Retex.new() |> Retex.add_production(rule)
-
-    edges_before_second_add_rule = Graph.edges(network.graph) |> Enum.count()
-    vertices_before_second_add_rule = Graph.vertices(network.graph) |> Enum.count()
-
-    network = Retex.add_production(network, rule)
-
-    assert edges_before_second_add_rule == Graph.edges(network.graph) |> Enum.count()
-    assert vertices_before_second_add_rule == Graph.vertices(network.graph) |> Enum.count()
-  end
-
   test "add a production with existing attributes" do
     given = [
       has_attribute(:Account, :status, :==, "silver"),
@@ -65,8 +42,8 @@ defmodule RetexTest do
       |> Retex.add_production(rule)
       |> Retex.add_production(rule_b)
 
-    assert 20 == Graph.edges(network.graph) |> Enum.count()
-    assert 17 == Graph.vertices(network.graph) |> Enum.count()
+    assert 22 == Graph.edges(network.graph) |> Enum.count()
+    assert 18 == Graph.vertices(network.graph) |> Enum.count()
   end
 
   test "add a production" do
