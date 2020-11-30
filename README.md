@@ -11,7 +11,7 @@ Rete is a complex stateful algorithm, this is an attempt of reproducing it with 
 
 - Retex compiles the rules using a directed acyclic graph data structure
 - The activation of nodes is done using a [State Monad and Forward Chaining](https://www.researchgate.net/publication/303626297_Forward_Chaining_with_State_Monad).
-- A list of bindinds is stored at each active node in order to generate complete matched from partial ones
+- A list of bindinds is stored at each active node in order to generate complete matches from partial ones
 
 
 ## Warnings
