@@ -27,6 +27,8 @@ end
 
 ## Installation using the wrapper NeuralBridge
 
+If you want you can have a predefined generic DSL and the wrapper NeuralBridge so that you don't have to build the rest of the Expert System from zero
+
 ```elixir
 def deps do
   [
