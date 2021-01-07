@@ -13,6 +13,18 @@ Rete is a complex stateful algorithm, this is an attempt of reproducing it with 
 - The activation of nodes is done using a [State Monad and Forward Chaining](https://www.researchgate.net/publication/303626297_Forward_Chaining_with_State_Monad).
 - A list of bindinds is stored at each active node in order to generate complete matches from partial ones
 
+
+
+## Installation
+
+```elixir
+def deps do
+  [
+    {:retex, git: "https://github.com/lorenzosinisi/retex"}
+  ]
+end
+```
+
 ## Installation using the wrapper NeuralBridge
 
 ```elixir
