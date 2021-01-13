@@ -61,9 +61,7 @@ defmodule Retex do
 
   @spec build_alpha_network(Graph.t(), list()) :: {Graph.t(), list()}
   def build_alpha_network(graph, given) do
-    given
-    |> Enum.reverse()
-    |> Enum.reduce({graph, []}, &Retex.Protocol.AlphaNetwork.append(&1, &2))
+    Enum.reduce(given, {graph, []}, &Retex.Protocol.AlphaNetwork.append(&1, &2))
   end
 
   @spec build_beta_network(Graph.t(), list(network_node())) :: {list(network_node()), Graph.t()}
