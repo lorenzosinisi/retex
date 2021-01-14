@@ -20,7 +20,7 @@ defmodule Retex do
             agenda: [],
             activations: %{},
             wme_activations: %{},
-            tokens: %{},
+            tokens: MapSet.new(),
             bindings: %{},
             pending_activation: []
 
@@ -96,8 +96,6 @@ defmodule Retex do
 
   def hash(data) do
     :crypto.hash(:sha256, inspect(data))
-    |> Base.encode16()
-    |> String.downcase()
   end
 
   @spec replace_bindings(PNode.t(), map) :: PNode.t()
@@ -154,15 +152,15 @@ defmodule Retex do
         _bindings,
         [_ | _] = tokens
       ) do
-    node_tokens = Map.get(rete_tokens, current_node.id, [])
-    all_tokens = Enum.uniq(node_tokens ++ tokens)
+    node_tokens = Map.get(rete_tokens, current_node.id, []) |> MapSet.new()
+    all_tokens = MapSet.new(node_tokens) |> MapSet.union(MapSet.new(tokens))
     new_tokens = Map.put(rete_tokens, current_node.id, all_tokens)
 
     %{rete | tokens: new_tokens}
   end
 
   def add_token(%Retex{tokens: rete_tokens} = rete, current_node, wme, bindings, tokens) do
-    node_tokens = Map.get(rete_tokens, current_node.id, [])
+    node_tokens = Map.get(rete_tokens, current_node.id, []) |> MapSet.new()
     token = Token.new()
 
     token = %{
@@ -172,9 +170,13 @@ defmodule Retex do
         bindings: bindings
     }
 
-    all_tokens = [token | node_tokens] ++ tokens
+    all_tokens =
+      [token]
+      |> MapSet.new()
+      |> MapSet.union(node_tokens)
+      |> MapSet.union(MapSet.new(tokens))
 
-    new_tokens = Map.put(rete_tokens, current_node.id, Enum.uniq(all_tokens))
+    new_tokens = Map.put(rete_tokens, current_node.id, MapSet.new(all_tokens))
     %{rete | tokens: new_tokens}
   end
 

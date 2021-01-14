@@ -22,7 +22,7 @@ defmodule Retex.Node.BetaMemory do
            true <- Activation.active?(right, rete),
            left_tokens <- Map.get(rete.tokens, left.id),
            right_tokens <- Map.get(rete.tokens, right.id),
-           new_tokens <- matching_tokens(right_tokens, left_tokens),
+           new_tokens <- matching_tokens(neighbor, wme, right_tokens, left_tokens),
            true <- Enum.any?(new_tokens) do
         rete
         |> Retex.create_activation(neighbor, wme)
@@ -34,22 +34,28 @@ defmodule Retex.Node.BetaMemory do
       end
     end
 
-    defp matching_tokens(left, nil), do: left
-    defp matching_tokens(nil, right), do: right
+    defp matching_tokens(_, _, left, nil), do: left
+    defp matching_tokens(_, _, nil, right), do: right
 
-    defp matching_tokens(left, right) do
-      for i <- left, j <- right do
-        left_bindings = if is_tuple(i), do: elem(i, 2), else: i.bindings
-        right_bindings = if is_tuple(j), do: elem(j, 2), else: j.bindings
-
-        if variables_match(left_bindings, right_bindings),
-          do: [{j, i, Map.merge(left_bindings, right_bindings)}],
-          else: []
+    defp matching_tokens(node, wme, left, right) do
+      for %{bindings: left_bindings} <- left, %{bindings: right_bindings} <- right do
+        if variables_match?(left_bindings, right_bindings) do
+          [
+            %{
+              Retex.Token.new()
+              | wmem: wme,
+                node: node.id,
+                bindings: Map.merge(left_bindings, right_bindings)
+            }
+          ]
+        else
+          []
+        end
       end
       |> List.flatten()
     end
 
-    defp variables_match(left, right) do
+    defp variables_match?(left, right) do
       Enum.reduce_while(left, true, fn {key, value}, true ->
         if Map.get(right, key, value) == value, do: {:cont, true}, else: {:halt, false}
       end) &&

@@ -5,7 +5,7 @@ defmodule Retex.Fact.HasAttribute do
 
   @type owner :: String.t() | atom()
   @type attribute :: String.t() | atom()
-  @type predicate :: :== | :=== | :!== | :!= | :> | :< | :<= | :>=
+  @type predicate :: :== | :=== | :!== | :!= | :> | :< | :<= | :>= | :in
   @type value :: any()
   @type fields :: [owner: owner(), attribute: attribute(), predicate: predicate(), value: value()]
 
