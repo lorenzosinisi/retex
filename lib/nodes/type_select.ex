@@ -51,7 +51,7 @@ defmodule Retex.Node.Select do
 
     @spec active?(%{id: any}, Retex.t()) :: boolean()
     def active?(%{id: id}, %Retex{activations: activations}) do
-      not Enum.empty?(Map.get(activations, id, []))
+      Enum.any?(Map.get(activations, id, []))
     end
   end
 

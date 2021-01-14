@@ -18,8 +18,7 @@ defmodule Retex.Node.PNode do
           _bindings,
           _tokens
         ) do
-      # A production node has only one parent, right?
-      [parent | _] =
+      [parent] =
         parents =
         Graph.in_neighbors(graph, neighbor)
         |> Enum.filter(fn node ->
@@ -31,11 +30,7 @@ defmodule Retex.Node.PNode do
       if Enum.all?(parents, &Map.get(activations, &1.id)) do
         productions =
           for token <- tokens do
-            if is_tuple(token) do
-              Retex.replace_bindings(neighbor, token)
-            else
-              Retex.replace_bindings(neighbor, token.bindings)
-            end
+            Retex.replace_bindings(neighbor, token.bindings)
           end
           |> List.flatten()
           |> Enum.uniq()
