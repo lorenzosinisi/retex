@@ -95,7 +95,9 @@ defmodule Retex do
   def hash(:uuid4), do: UUIDTools.uuid4()
 
   def hash(data) do
-    :crypto.hash(:sha256, inspect(data))
+    :sha256
+    |> :crypto.hash(inspect(data))
+    |> Base.encode16(case: :lower)
   end
 
   @spec replace_bindings(PNode.t(), map) :: PNode.t()
