@@ -101,7 +101,7 @@ defmodule Retex do
   end
 
   @spec replace_bindings(PNode.t(), map) :: PNode.t()
-  def replace_bindings(%_{action: action_fun} = pnode, {_, _, bindings})
+  def replace_bindings(%_{action: action_fun} = pnode, bindings)
       when is_function(action_fun) do
     %{pnode | action: action_fun, bindings: bindings}
   end
