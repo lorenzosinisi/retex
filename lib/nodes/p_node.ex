@@ -29,9 +29,8 @@ defmodule Retex.Node.PNode do
 
       if Enum.all?(parents, &Map.get(activations, &1.id)) do
         productions =
-          for token <- tokens do
-            Retex.replace_bindings(neighbor, token.bindings)
-          end
+          tokens
+          |> Enum.map(fn token -> Retex.replace_bindings(neighbor, token.bindings) end)
           |> List.flatten()
           |> Enum.uniq()
           |> apply_filters(filters)

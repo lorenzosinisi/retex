@@ -101,6 +101,11 @@ defmodule Retex do
   end
 
   @spec replace_bindings(PNode.t(), map) :: PNode.t()
+  def replace_bindings(%_{action: action_fun} = pnode, {_, _, bindings})
+      when is_function(action_fun) do
+    %{pnode | action: action_fun, bindings: bindings}
+  end
+
   def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
     new_actions = Enum.map(actions, fn action -> replace_bindings(action, bindings) end)
     %{pnode | action: new_actions, bindings: bindings}
@@ -134,11 +139,6 @@ defmodule Retex do
       when is_map(bindings) and is_list(actions) do
     new_actions = Enum.map(actions, fn action -> replace_bindings(action, bindings) end)
     %{pnode | action: new_actions, bindings: bindings}
-  end
-
-  def replace_bindings(%_{action: action_fun} = pnode, {_, _, bindings})
-      when is_function(action_fun) do
-    %{pnode | action: action_fun, bindings: bindings}
   end
 
   def replace_bindings(anything, _bindings) do
