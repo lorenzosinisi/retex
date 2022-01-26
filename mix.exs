@@ -69,7 +69,7 @@ defmodule Retex.MixProject do
       test: [
         "format",
         "coveralls",
-        "credo --strict",
+        "credo",
         "sobelow --skip -i Config.HTTPS --verbose"
       ]
     ]

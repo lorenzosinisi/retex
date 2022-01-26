@@ -50,14 +50,14 @@ defmodule Retex.Node.PNode do
       raise "Not implemented"
     end
 
-    def apply_filters(nodes, filters) do
-      pass_test = fn node ->
-        Enum.reduce_while(filters, true, fn filter, _ ->
-          if test_pass?(node, filter), do: {:cont, true}, else: {:halt, false}
-        end)
-      end
+    defp pass_test?(filters, node) do
+      Enum.reduce_while(filters, true, fn filter, _ ->
+        if test_pass?(node, filter), do: {:cont, true}, else: {:halt, false}
+      end)
+    end
 
-      Enum.filter(nodes, pass_test)
+    def apply_filters(nodes, filters) do
+      Enum.filter(nodes, fn node -> pass_test?(filters, node) end)
     end
 
     def test_pass?(%Retex.Node.PNode{bindings: bindings}, %Retex.Fact.Filter{
