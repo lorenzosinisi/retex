@@ -2,6 +2,15 @@
 
 ![Elixir CI](https://github.com/lorenzosinisi/retex/workflows/Elixir%20CI/badge.svg)
 
+# The Rete Algorithm
+
+"The Rete Match Algorithm is an efficient method for comparing a large collection of patterns to a large
+collection of objects. Itfinds all the objects that match eachpattern. The algorithm was developedfor use in
+production system interpreters, and it has been used for systems containing from a few hundred to more
+than a thousand patterns and objects. This article presents the algorithm in detail. It explains the basic
+concepts of the algorithm, it describes pattern and object representations that are appropriate for the
+algorithm, and it describes the operations performed by the pattern matcher." - C. Forgy
+
 **Boilerplate/PoC of a version of the Rete Algorithm implementated in Elixir**
 
 Rete is a complex stateful algorithm, this is an attempt of reproducing it with some slight modifications, using a functional immutable language such as Elixir/Erlang. [Read more about Rete](http://www.csl.sri.com/users/mwfong/Technical/RETE%20Match%20Algorithm%20-%20Forgy%20OCR.pdf)
