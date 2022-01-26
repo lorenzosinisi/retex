@@ -2,14 +2,14 @@ defmodule Retex do
   @moduledoc false
 
   @type t() :: %Retex{}
-  alias Retex.{Node, Protocol, Fact, Token}
+  alias Retex.{Fact, Node, Protocol, Protocol.AlphaNetwork, Token}
 
   alias Node.{
-    Type,
-    Test,
-    Select,
+    BetaMemory,
     PNode,
-    BetaMemory
+    Select,
+    Test,
+    Type
   }
 
   @type action :: %{given: list(Retex.Wme.t()), then: list(Retex.Wme.t())}
@@ -25,10 +25,10 @@ defmodule Retex do
             pending_activation: []
 
   @spec root_vertex :: Retex.Root.t()
-  def root_vertex(), do: Retex.Root.new()
+  def root_vertex, do: Retex.Root.new()
 
   @spec new :: Retex.t()
-  def new() do
+  def new do
     %{graph: graph} = %Retex{}
     graph = Graph.add_vertex(graph, Retex.Root.new())
     %Retex{graph: graph}
@@ -61,7 +61,7 @@ defmodule Retex do
 
   @spec build_alpha_network(Graph.t(), list()) :: {Graph.t(), list()}
   def build_alpha_network(graph, given) do
-    Enum.reduce(given, {graph, []}, &Retex.Protocol.AlphaNetwork.append(&1, &2))
+    Enum.reduce(given, {graph, []}, &AlphaNetwork.append(&1, &2))
   end
 
   @spec build_beta_network(Graph.t(), list(network_node())) :: {list(network_node()), Graph.t()}

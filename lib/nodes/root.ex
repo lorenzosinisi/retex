@@ -8,7 +8,7 @@ defmodule Retex.Root do
 
   @type t :: %Retex.Root{}
 
-  def new(), do: %__MODULE__{}
+  def new, do: %__MODULE__{}
 
   defimpl Retex.Protocol.Activation do
     def activate(

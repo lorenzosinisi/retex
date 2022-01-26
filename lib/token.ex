@@ -15,7 +15,7 @@ defmodule Retex.Token do
 
   @type t() :: %Retex.Token{}
 
-  def new() do
+  def new do
     Map.put(%__MODULE__{}, :id, Retex.hash(:uuid4))
   end
 end

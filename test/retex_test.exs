@@ -1,6 +1,6 @@
 defmodule RetexTest do
   use ExUnit.Case
-  alias Retex.{Facts}
+  alias Retex.Facts
   import Facts
   doctest Retex
 

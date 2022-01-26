@@ -12,7 +12,7 @@ defmodule Retex.Node.PNode do
 
   defimpl Retex.Protocol.Activation do
     def activate(
-          neighbor = %{filters: filters},
+          %{filters: filters} = neighbor,
           %Retex{tokens: tokens, graph: graph, activations: activations} = rete,
           _wme,
           _bindings,
@@ -51,11 +51,13 @@ defmodule Retex.Node.PNode do
     end
 
     def apply_filters(nodes, filters) do
-      Enum.filter(nodes, fn node ->
+      pass_test = fn node ->
         Enum.reduce_while(filters, true, fn filter, _ ->
           if test_pass?(node, filter), do: {:cont, true}, else: {:halt, false}
         end)
-      end)
+      end
+
+      Enum.filter(nodes, pass_test)
     end
 
     def test_pass?(%Retex.Node.PNode{bindings: bindings}, %Retex.Fact.Filter{

@@ -14,10 +14,11 @@ defmodule Retex.Fact.Isa do
 
   defimpl Retex.Protocol.AlphaNetwork do
     alias Retex.Fact.Isa
+    alias Retex.Node.Type
 
     def append(%Isa{} = condition, {graph, test_nodes}) do
       %{variable: _, type: type} = condition
-      type_node = Retex.Node.Type.new(type)
+      type_node = Type.new(type)
 
       new_graph =
         graph
