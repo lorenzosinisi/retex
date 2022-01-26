@@ -1,13 +1,11 @@
+Mix.install([
+  {:retex, path: "./"},
+  {:duration, "~> 0.1.0"},
+  {:timex, "~> 3.7.6"}
+])
+
 defmodule Benchmark do
   alias Retex.Agenda
-
-  defp isa(variable, type) do
-    isa(variable: variable, type: type)
-  end
-
-  defp isa(fields) do
-    Retex.Fact.Isa.new(fields)
-  end
 
   defp has_attribute(owner, attribute, predicate, value) do
     has_attribute(owner: owner, attribute: attribute, predicate: predicate, value: value)
@@ -43,7 +41,7 @@ defmodule Benchmark do
     end
   end
 
-  def run(depth \\ 2000) do
+  def run(depth \\ 20000) do
     depth =
       case parse(System.argv()) do
         {[depth: depth], _, _} -> depth
@@ -55,31 +53,35 @@ defmodule Benchmark do
 
     Logger.info("Adding #{depth} rules...")
 
-    result =
-      Timer.tc(fn ->
+    {time, rete_engine} =
+      :timer.tc(fn ->
         Enum.reduce(rules, Retex.new(), fn rule, network ->
           Retex.add_production(network, rule)
         end)
       end)
 
-    duration = result[:humanized_duration]
-    network = result[:reply]
-    Logger.info("Adding #{depth} rules took #{duration}")
+    Graph.info(rete_engine.graph) |> inspect() |> Logger.info()
+    Logger.info("Adding #{depth} rules took #{humanized_duration(time)}")
 
     wme = Retex.Wme.new("Thing_1", "attribute_1", 1)
 
-    result = Timer.tc(fn -> Retex.add_wme(network, wme) end)
+    {time, rete_engine} = :timer.tc(fn -> Retex.add_wme(rete_engine, wme) end)
 
-    duration = result[:humanized_duration]
-    network = result[:reply]
+    Agenda.ExecuteOnce.consume_agenda([], rete_engine)
 
-    {executed_rules, network} = Agenda.ExecuteOnce.consume_agenda([], network)
-
-    Logger.info("Adding working memories took #{duration}")
+    Logger.info("Adding the working memory took #{humanized_duration(time)}")
   end
 
   defp parse(args) do
     OptionParser.parse(args, strict: [depth: :integer])
+  end
+
+  defp humanized_duration(time) do
+    duration_in_seconds = time / 1_000_000
+
+    duration_in_seconds
+    |> Timex.Duration.from_seconds()
+    |> Timex.Format.Duration.Formatter.format(:humanized)
   end
 end
 
