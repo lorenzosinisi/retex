@@ -4,7 +4,7 @@
 
 # The Rete Algorithm
 
-"The Rete Match Algorithm is an efficient method for comparing a large collection of patterns to a large collection of objects. It finds all the objects that match each pattern. The algorithm was developed for use in production system interpreters, and it has been used for systems containing from a few hundred to more than a thousand patterns and objects. This article presents the algorithm in detail. It explains the basic concepts of the algorithm, it describes pattern and object representations that are appropriate for the algorithm, and it describes the operations performed by the pattern matcher" - C. Forgy
+"The Rete Match Algorithm is an efficient method for comparing a large collection of patterns to a large collection of objects. It finds all the objects that match each pattern. The algorithm was developed for use in production system interpreters, and it has been used for systems containing from a few hundred to more than a thousand patterns and objects" - C. Forgy
 
 **Boilerplate/PoC of a version of the Rete Algorithm implementated in Elixir**
 
