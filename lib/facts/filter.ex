@@ -12,10 +12,4 @@ defmodule Retex.Fact.Filter do
   def new(fields) do
     struct(__MODULE__, fields)
   end
-
-  defimpl Inspect do
-    def inspect(vertex, _opts) do
-      "Filter($#{vertex.variable}, #{vertex.predicate}, #{vertex.value})"
-    end
-  end
 end

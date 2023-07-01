@@ -34,10 +34,4 @@ defmodule Retex.Fact.UnexistantAttribute do
       {new_graph, [negative_select_node | nodes]}
     end
   end
-
-  defimpl Inspect do
-    def inspect(vertex, _opts) do
-      "UnexistantAttribute(#{vertex.owner}, #{vertex.attribute})"
-    end
-  end
 end

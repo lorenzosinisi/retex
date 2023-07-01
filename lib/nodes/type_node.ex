@@ -69,10 +69,4 @@ defmodule Retex.Node.Type do
       Enum.any?(Map.get(activations, id, []))
     end
   end
-
-  defimpl Inspect do
-    def inspect(node, _opts) do
-      "#{inspect(node.class)}"
-    end
-  end
 end

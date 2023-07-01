@@ -64,10 +64,4 @@ defmodule Retex.Node.Test do
       Enum.any?(Map.get(activations, id, []))
     end
   end
-
-  defimpl Inspect do
-    def inspect(%{id: id, class: [operator, value]}, _opts) do
-      "#{operator} #{value} (#{id})"
-    end
-  end
 end

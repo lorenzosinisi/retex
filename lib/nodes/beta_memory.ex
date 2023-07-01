@@ -69,10 +69,4 @@ defmodule Retex.Node.BetaMemory do
       Enum.any?(Map.get(activations, id, []))
     end
   end
-
-  defimpl Inspect do
-    def inspect(node, _opts) do
-      "Join(#{node.id})"
-    end
-  end
 end

@@ -54,10 +54,4 @@ defmodule Retex.Node.Select do
       Enum.any?(Map.get(activations, id, []))
     end
   end
-
-  defimpl Inspect do
-    def inspect(node, _opts) do
-      "#{node.parent}.#{node.class}"
-    end
-  end
 end

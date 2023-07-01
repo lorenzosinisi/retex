@@ -28,10 +28,4 @@ defmodule Retex.Fact.IsNot do
       {new_graph, [type_node | test_nodes]}
     end
   end
-
-  defimpl Inspect do
-    def inspect(vertex, _opts) do
-      "IsNot(#{vertex.variable}, #{vertex.type}, "
-    end
-  end
 end
