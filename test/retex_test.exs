@@ -155,7 +155,7 @@ defmodule RetexTest do
     test "apply inference with a negated attribute, when the negative node is active" do
       given = [
         isa("$thing", :Thing),
-        unexistant_attribute(:Thing, :status)
+        not_existing_attribute(:Thing, :status)
       ]
 
       action = [
@@ -185,7 +185,7 @@ defmodule RetexTest do
     test "apply inference with a negated attribute, when the negative node is not active" do
       given = [
         isa("$thing", :Thing),
-        unexistant_attribute(:Thing, :status)
+        not_existing_attribute(:Thing, :status)
       ]
 
       action = [
