@@ -35,11 +35,11 @@ defmodule Retex.Facts do
     Fact.HasAttribute.new(fields)
   end
 
-  def unexistant_attribute(owner, attribute) do
-    unexistant_attribute(owner: owner, attribute: attribute)
+  def not_existing_attribute(owner, attribute) do
+    not_existing_attribute(owner: owner, attribute: attribute)
   end
 
-  def unexistant_attribute(fields) do
-    Fact.UnexistantAttribute.new(fields)
+  def not_existing_attribute(fields) do
+    Fact.NotExistingAttribute.new(fields)
   end
 end
