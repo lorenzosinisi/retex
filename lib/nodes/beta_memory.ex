@@ -56,12 +56,24 @@ defmodule Retex.Node.BetaMemory do
     end
 
     defp variables_match?(left, right) do
-      Enum.reduce_while(left, true, fn {key, value}, true ->
-        if Map.get(right, key, value) == value, do: {:cont, true}, else: {:halt, false}
-      end) &&
-        Enum.reduce_while(right, true, fn {key, value}, true ->
-          if Map.get(left, key, value) == value, do: {:cont, true}, else: {:halt, false}
-        end)
+      left_bindings_match_in_right_bindings?(left, right) &&
+        right_bindings_match_in_left_bindings?(right, left)
+    end
+
+    defp left_bindings_match_in_right_bindings?(left, right) do
+      Enum.reduce_while(left, true, fn {key, left_value}, true ->
+        if Map.get(right, key, left_value) == left_value,
+          do: {:cont, true},
+          else: {:halt, false}
+      end)
+    end
+
+    defp right_bindings_match_in_left_bindings?(right, left) do
+      Enum.reduce_while(right, true, fn {key, right_value}, true ->
+        if Map.get(left, key, right_value) == right_value,
+          do: {:cont, true},
+          else: {:halt, false}
+      end)
     end
 
     @spec active?(%{id: any}, Retex.t()) :: boolean()
