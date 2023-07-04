@@ -46,6 +46,37 @@ defmodule RetexTest do
     assert 18 == Graph.vertices(network.graph) |> Enum.count()
   end
 
+  test "can convert the graph to a flowchart (mermaid)" do
+    given = [
+      has_attribute(:Account, :status, :==, "silver"),
+      has_attribute(:Account, :status, :!=, "outdated"),
+      has_attribute(:Flight, :partner, :!=, true)
+    ]
+
+    action = fn something -> something end
+
+    rule = create_rule(lhs: given, rhs: action)
+
+    given_b = [
+      has_attribute(:Account, :status, :==, "silver"),
+      has_attribute(:Account, :status, :!=, "outdated"),
+      has_attribute(:Family, :size, :>=, 12),
+      has_attribute(:Flight, :partner, :!=, true)
+    ]
+
+    action_b = fn something -> something end
+
+    rule_b = create_rule(lhs: given_b, rhs: action_b)
+
+    assert {:ok, _chart} =
+             network =
+             Retex.new()
+             |> Retex.add_production(rule)
+             |> Retex.add_production(rule_b)
+             |> Map.get(:graph)
+             |> Serializer.serialize()
+  end
+
   test "add a production where the then clause is a function" do
     given = [
       has_attribute(:Account, :status, :==, "silver"),
