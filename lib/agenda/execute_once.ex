@@ -1,6 +1,7 @@
 defmodule Retex.Agenda.ExecuteOnce do
   @moduledoc false
   @behaviour Retex.Agenda.Strategy
+
   def consume_agenda(executed_rules, %{agenda: [rule | rest] = _agenda} = network) do
     {rule_id, network} = execute_rule(rule, network)
 

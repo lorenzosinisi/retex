@@ -51,6 +51,7 @@ defmodule Retex do
     {filters, given} = Enum.split_with(given, &is_filter?/1)
     {graph, alphas} = build_alpha_network(graph, given)
     {beta_memory, graph} = build_beta_network(graph, alphas)
+
     graph = add_p_node(Map.get(rule, :id), graph, beta_memory, action, filters)
 
     %{network | graph: graph}
@@ -70,7 +71,7 @@ defmodule Retex do
   end
 
   @spec create_beta_nodes(Graph.t(), list(network_node())) :: {list(network_node()), Graph.t()}
-  def create_beta_nodes(graph, [first | [second | list]]) do
+  def create_beta_nodes(graph, [first, second | list]) do
     beta_memory = Node.BetaMemory.new()
 
     graph
@@ -154,15 +155,27 @@ defmodule Retex do
         _bindings,
         [_ | _] = tokens
       ) do
-    node_tokens = Map.get(rete_tokens, current_node.id, []) |> MapSet.new()
-    all_tokens = MapSet.new(node_tokens) |> MapSet.union(MapSet.new(tokens))
+    node_tokens =
+      rete_tokens
+      |> Map.get(current_node.id, [])
+      |> MapSet.new()
+
+    all_tokens =
+      node_tokens
+      |> MapSet.new()
+      |> MapSet.union(MapSet.new(tokens))
+
     new_tokens = Map.put(rete_tokens, current_node.id, all_tokens)
 
     %{rete | tokens: new_tokens}
   end
 
   def add_token(%Retex{tokens: rete_tokens} = rete, current_node, wme, bindings, tokens) do
-    node_tokens = Map.get(rete_tokens, current_node.id, []) |> MapSet.new()
+    node_tokens =
+      rete_tokens
+      |> Map.get(current_node.id, [])
+      |> MapSet.new()
+
     token = Token.new()
 
     token = %{
@@ -178,7 +191,7 @@ defmodule Retex do
       |> MapSet.union(node_tokens)
       |> MapSet.union(MapSet.new(tokens))
 
-    new_tokens = Map.put(rete_tokens, current_node.id, MapSet.new(all_tokens))
+    new_tokens = Map.put(rete_tokens, current_node.id, all_tokens)
     %{rete | tokens: new_tokens}
   end
 

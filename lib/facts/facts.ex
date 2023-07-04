@@ -1,7 +1,8 @@
 defmodule Retex.Facts do
   @moduledoc false
-  @type t :: Fact.Relation.t() | Fact.Isa.t() | Fact.HasAttribute.t()
   alias Retex.Fact
+
+  @type t :: Fact.Relation.t() | Fact.Isa.t() | Fact.HasAttribute.t()
 
   def relation(from, name, to) do
     Fact.Relation.new(name: name, from: from, to: to)
