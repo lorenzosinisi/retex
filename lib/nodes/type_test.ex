@@ -32,7 +32,7 @@ defmodule Retex.Node.Test do
           bindings,
           tokens
         ) do
-      if apply(Enum, :member?, [value, wme.value]) do
+      if Enum.member?(value, wme.value) do
         rete
         |> Retex.create_activation(neighbor, wme)
         |> Retex.add_token(neighbor, wme, bindings, tokens)
