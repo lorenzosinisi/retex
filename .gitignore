@@ -25,5 +25,8 @@ rete_elixir-*.tar
 # Ignore elixir language server cache
 .elixir_ls/
 
-# DStore 
+# DStore
 .DS_Store
+
+
+/priv/plts/*
