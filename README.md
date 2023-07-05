@@ -366,3 +366,12 @@ end
 
 - [Rete](https://cis.temple.edu/~giorgio/cis587/readings/rete.html)
 - [Retex at ElixirConf EU](https://www.youtube.com/watch?v=pvi5hURNzbk&ab_channel=CodeSync)
+
+References:
+
+```
+Rete: A Fast Algorithm for the Many Pattern/Many Object Pattern Match Problem* by
+Charles L. Forgy
+Department of Computer Science, Carnegie-Mellon University,
+Pittsburgh, PA 15213, U.S.A.
+```
