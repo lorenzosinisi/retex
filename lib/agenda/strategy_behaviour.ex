@@ -1,5 +1,6 @@
 defmodule Retex.Agenda.Strategy do
   @moduledoc false
+
   @type rules_executed :: list()
   @type network :: Retex.t()
 

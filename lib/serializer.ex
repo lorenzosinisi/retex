@@ -1,4 +1,4 @@
-defmodule Serializer do
+defmodule Retex.Serializer do
   @moduledoc """
   This serializer converts a `Graph` to a [Mermaid Flowchart](https://mermaid.js.org/syntax/flowchart.html).
   """
@@ -26,7 +26,7 @@ defmodule Serializer do
 
   defp serialize_vertices(g) do
     Enum.map_join(g.vertices, "\n", fn {id, value} ->
-      indent(1) <> "#{id}" <> "[" <> vertex_labels(g, id, value) <> "]"
+      indent(1) <> "#{id}" <> "[\"" <> vertex_labels(g, id, value) <> "\"]"
     end)
   end
 
@@ -72,8 +72,8 @@ defmodule Serializer do
     "Join"
   end
 
-  defp encode(%Retex.Node.PNode{id: id}) do
-    "Rule##{id}"
+  defp encode(%Retex.Node.PNode{id: id, action: action}) do
+    "#{inspect(action, pretty: true)}"
   end
 
   defp serialize_edge({id, out_edge_id, weight, label}, arrow) do
