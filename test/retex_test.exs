@@ -11,6 +11,24 @@ defmodule RetexTest do
     }
   end
 
+  test "create a very simple rule of one condition" do
+    given = [
+      has_attribute(:Customer, :account_status, :==, "silver"),
+      has_attribute(:Flight, :miles, :==, "100")
+    ]
+
+    action = [
+      {:Discount, :code, 50}
+    ]
+
+    rule = create_rule(lhs: given, rhs: action)
+
+    network = Retex.add_production(Retex.new(), rule)
+
+    {:ok, graph} = Retex.Serializer.serialize(network.graph)
+    IO.puts(graph)
+  end
+
   test "add a production with existing attributes" do
     given = [
       has_attribute(:Account, :status, :==, "silver"),
@@ -73,7 +91,7 @@ defmodule RetexTest do
              |> Retex.add_production(rule)
              |> Retex.add_production(rule_b)
              |> Map.get(:graph)
-             |> Serializer.serialize()
+             |> Retex.Serializer.serialize()
   end
 
   test "add a production where the then clause is a function" do
