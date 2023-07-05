@@ -228,11 +228,6 @@ and will point to a production.
 - The activation of nodes is done using a [State Monad and Forward Chaining](https://www.researchgate.net/publication/303626297_Forward_Chaining_with_State_Monad).
 - A list of bindings is stored at each active node in order to generate complete matches from partial ones
 
-When compiled, the network will look something like the following:
-
-![pic2](https://user-images.githubusercontent.com/3610215/151336976-cb27fe80-33fe-48c0-bf29-b500d1de1b04.png)
-
-
 ## Installation
 
 ```elixir
@@ -367,6 +362,7 @@ end
 - Use at your own risk
 - This is just a template for complexer implementations of the described algorithms
 
-## For more on Rete algorithm
+## Resources and documentation
 
 - [Rete](https://cis.temple.edu/~giorgio/cis587/readings/rete.html)
+- [Retex at ElixirConf EU](https://www.youtube.com/watch?v=pvi5hURNzbk&ab_channel=CodeSync)
