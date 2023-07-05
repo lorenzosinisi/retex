@@ -88,13 +88,12 @@ defmodule Retex do
     graph |> Graph.add_vertex(prod) |> Graph.add_edge(beta_memory, prod)
   end
 
+  @max_phash 4_294_967_296
   @spec hash(any) :: String.t()
   def hash(:uuid4), do: UUIDTools.uuid4()
 
   def hash(data) do
-    :sha256
-    |> :crypto.hash(inspect(data))
-    |> Base.encode16(case: :lower)
+    :erlang.phash2(data, @max_phash)
   end
 
   @spec replace_bindings(PNode.t(), map) :: PNode.t()

@@ -68,7 +68,7 @@ defmodule RetexTest do
 
     rule_b = create_rule(lhs: given_b, rhs: action_b)
 
-    assert {:ok, _chart} =
+    assert {:ok, _} =
              Retex.new()
              |> Retex.add_production(rule)
              |> Retex.add_production(rule_b)
