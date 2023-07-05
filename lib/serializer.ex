@@ -37,24 +37,27 @@ defmodule Serializer do
         :undirected -> "-"
       end
 
-    g.vertices
-    |> Enum.reduce([], fn {id, _}, acc ->
-      g.out_edges
-      |> Map.get_lazy(id, &MapSet.new/0)
-      |> Enum.flat_map(fn out_edge_id ->
-        g.edges
-        |> Map.fetch!({id, out_edge_id})
-        |> Enum.map(fn
-          {nil, weight} -> {id, out_edge_id, weight}
-          {label, weight} -> {id, out_edge_id, weight, encode(label)}
-        end)
+    edges =
+      g.vertices
+      |> Enum.reduce([], fn {id, _}, acc ->
+        out_edges =
+          g.out_edges
+          |> Map.get_lazy(id, &MapSet.new/0)
+          |> Enum.flat_map(&fetch_edge(g, id, &1))
+
+        acc ++ out_edges
       end)
-      |> case do
-        [] -> acc
-        edges -> acc ++ edges
-      end
+
+    Enum.map_join(edges, "\n", &serialize_edge(&1, arrow))
+  end
+
+  defp fetch_edge(g, id, out_edge_id) do
+    g.edges
+    |> Map.fetch!({id, out_edge_id})
+    |> Enum.map(fn
+      {nil, weight} -> {id, out_edge_id, weight}
+      {label, weight} -> {id, out_edge_id, weight, encode(label)}
     end)
-    |> Enum.map_join("\n", &serialize_edge(&1, arrow))
   end
 
   defp encode(%{class: name}) when is_list(name) do
