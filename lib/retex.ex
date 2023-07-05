@@ -42,10 +42,6 @@ defmodule Retex do
     %{network | bindings: Map.merge(network.bindings, bindings)}
   end
 
-  defp propagate_activation(neighbor, rete, wme, bindings, tokens \\ []) do
-    Protocol.Activation.activate(neighbor, rete, wme, bindings, tokens)
-  end
-
   @spec add_production(Retex.t(), %{given: list(Retex.Wme.t()), then: action()}) :: t()
   def add_production(%{graph: graph} = network, %{given: given, then: action} = rule) do
     {filters, given} = Enum.split_with(given, &is_filter?/1)
@@ -107,7 +103,8 @@ defmodule Retex do
     %{pnode | action: action_fun, bindings: bindings}
   end
 
-  def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
+  def replace_bindings(%_{action: actions} = pnode, bindings)
+      when is_list(actions) and is_map(bindings) do
     new_actions = Enum.map(actions, fn action -> replace_bindings(action, bindings) end)
     %{pnode | action: new_actions, bindings: bindings}
   end
@@ -122,24 +119,12 @@ defmodule Retex do
     struct(Retex.Wme, populated)
   end
 
-  def replace_bindings(%_{action: actions} = pnode, bindings) when is_map(bindings) do
-    new_actions = Enum.map(actions, fn action -> replace_bindings(action, bindings) end)
-
-    %{pnode | action: new_actions, bindings: bindings}
-  end
-
   def replace_bindings(tuple, bindings) when is_map(bindings) and is_tuple(tuple) do
     List.to_tuple(
       for element <- Tuple.to_list(tuple) do
         if is_binary(element), do: Map.get(bindings, element, element), else: element
       end
     )
-  end
-
-  def replace_bindings(%_{action: actions} = pnode, {_, _, bindings})
-      when is_map(bindings) and is_list(actions) do
-    new_actions = Enum.map(actions, fn action -> replace_bindings(action, bindings) end)
-    %{pnode | action: new_actions, bindings: bindings}
   end
 
   def replace_bindings(anything, _bindings) do
@@ -245,6 +230,10 @@ defmodule Retex do
     |> Enum.reduce({rete, bindings}, fn vertex, {network, bindings} ->
       propagate_activation(vertex, network, wme, bindings)
     end)
+  end
+
+  defp propagate_activation(neighbor, rete, wme, bindings, tokens \\ []) do
+    Protocol.Activation.activate(neighbor, rete, wme, bindings, tokens)
   end
 
   @spec deactivate_descendants(Retex.t(), network_node()) :: Retex.t()

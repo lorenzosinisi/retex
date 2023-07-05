@@ -38,7 +38,7 @@ defmodule Retex.Node.PNode do
 
         new_rete = %{
           rete
-          | agenda: ([productions] ++ rete.agenda) |> List.flatten() |> Enum.uniq()
+          | agenda: [productions | rete.agenda] |> List.flatten() |> Enum.uniq()
         }
 
         Retex.stop_traversal(new_rete, %{})
@@ -51,14 +51,14 @@ defmodule Retex.Node.PNode do
       raise "Not implemented"
     end
 
+    def apply_filters(nodes, filters) do
+      Enum.filter(nodes, fn node -> pass_test?(filters, node) end)
+    end
+
     defp pass_test?(filters, node) do
       Enum.reduce_while(filters, true, fn filter, _ ->
         if test_pass?(node, filter), do: {:cont, true}, else: {:halt, false}
       end)
-    end
-
-    def apply_filters(nodes, filters) do
-      Enum.filter(nodes, fn node -> pass_test?(filters, node) end)
     end
 
     def test_pass?(%Retex.Node.PNode{bindings: bindings}, %Retex.Fact.Filter{
