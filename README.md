@@ -19,13 +19,13 @@ Rete is a complex stateful algorithm, this is an attempt of reproducing it with 
 
 ## How does it work?
 
-The algorithm creates an internal representation of the world using symbols. Each "thing" in the real word is converted into a triple `{Entity, attribute, attribute_value}`, this triple is also called "WME" that stands for Working Memory Element.
+The algorithm utilizes symbols to create an internal representation of the world. Each element in the real world is converted into a triple known as a "Working Memory Element" (WME), represented as {Entity, attribute, attribute_value}.
 
-The world is represented with facts (the WMEs) and Rules. A rule is nothing but a struct made of two important part: `give` and `then` or also called right and left side respectively.
+The world is represented through facts (WMEs) and Rules. A Rule consists of two essential parts: the "given" (right side) and the "then" (left side).
 
-In order to execute inference the rule creates a directed graph that starts with a common and generic Root node and creates leafs branching out of it. The only branches out of a Root node can be the first part of the WME (the working memory elements) and so our "Entity". For example if we want to represent a customer's account status that is "silver" we would encode it as "{Customer, account_status, silver}". But since we have a struct for it we can also do: `Retex.Wme.new("Customer", "account status", "silver")`.
+To perform inference, the rule generates a directed graph starting from a common and generic Root node, which branches out to form leaf nodes. The branches from the Root node correspond to the initial part of the WME, representing the working memory elements or "Entity". For instance, if we want to represent a customer's account status as "silver", we would encode it as "{Customer, account_status, silver}". Alternatively, with the use of a struct, we can achieve the same representation as Retex.Wme.new("Customer", "account status", "silver").
 
-Let's see what this would look if we compile the rete algorithm with Retex:
+Now, let's explore how this would appear when compiling the rete algorithm with Retex:
 
 ```mermaid
  flowchart
@@ -39,19 +39,20 @@ Let's see what this would look if we compile the rete algorithm with Retex:
  ```
  **example nr. 1**
 
-Now we can see how we have a graph with 4 nodes, and in order:
+Now, let's examine the graph, which consists of four nodes in the following order:
 
 1. The Root node
-   1. this node works as a root of all type nodes (Account, Customer, God, Table, etc..)
+   1. This node serves as the root for all type nodes, such as Account, Customer, God, Table, and so on.
 2. The Customer node
-   1. is also called a Type node and does nothing but storing each known "type" of entity that the algorithm knows about
+   1. Also known as a Type node, it stores each known "type" of entity recognized by the algorithm.
 3. The account_status node
-   1. is also called a Select node and represent the attribute name of the entity we are describing
+   1. Referred to as a Select node, it represents the attribute name of the entity being described.
 4. the ==silver node
-   1. is also called a Test node and you will notice the `==` which is indicating that what ever the value of Customer.account_status is to be checked against `== silver` and so it has to be the literal string silver in this case
+   1. Known as a Test node, it includes the == symbol, indicating that the value of Customer.account_status is checked against "silver" as a literal string (tests can use all Elixir comparison symbols). 
 
 
-As you can imagine we can now keep adding more and more mapping to the real word using any triple we want, let's add for example the entity that represent a Flight and in particular the number of miles of a flight, we can say we have `{Flight, miles, 100}` to make the case that in our system there is a flight with that number of miles.
+By expanding this network, we can continue mapping various aspects of the real world using any desired triple. Let's consider the entity representing a Flight, specifically its number of miles. We can represent this as {Flight, miles, 100} to signify a flight with a mileage of 100. Now, let's incorporate this into our network and observe the resulting graph:
+
 Let's add this to our network and check what kind of graph we will get:
 
 ```mermaid
@@ -73,11 +74,11 @@ flowchart
 
 **example nr. 2**
 
-Now we start to see that we can model more complex scenarios, let's imagine that we want to add our first inference to the network (our first rule).
+Now we begin to observe the modeling of more complex scenarios. Let's consider the addition of our first inference to the network, which involves introducing our first rule.
 
-We want to encode the fact that when the Customer.account_status is "silver and the Flight.miles are exactly "100" we want to add a discount to our Customer entity.
+The rule we want to encode states that when the Customer's account_status is "silver" and the Flight's miles are exactly "100," we should apply a discount to the Customer entity.
 
-Let's see how our network will look like after adding such rule:
+Let's examine how our network will appear after incorporating this rule:
 
 ```mermaid
 flowchart
@@ -102,23 +103,24 @@ flowchart
 ```
 
 
-Now we have built our network and it has a symbolic representation of the world and the description of the relationship between multiple entities and their values to trigger a rule (the last node {:Discount, :code, 50}).
+Now we have constructed our network, which possesses a symbolic representation of the world and describes the relationships between multiple entities and their values to trigger a rule. Notably, the last node in the graph is represented as {:Discount, :code, 50}.
 
-## How do we read that graph?
+Let's examine how we can interpret this graph step by step:
 
-Let's go step by step:
+1. At the first level, we encounter the Root node, which serves as a placeholder.
+2. At the second level, we find the Flight and Customer nodes branching out from the Root node. It's important to note that they are at the same level.
+3. Both the Flight and Customer nodes branch out only once since they each have only one attribute.
+4. Each attribute node (==100 and ==silver) branches out once again to indicate that if we encounter the attribute Customer.account_status, we should verify that its value is indeed "silver."
+5. The last two nodes (==100 and ==silver) both connect to a new anonymous node called the Join node.
+6. The Join node branches out only once, leading to the right-hand side of the rule (also known as the production node).
 
-1. At the first level we have the Root which is just a placeholder
-2. At the second level we have the nodes Flight and Customer (notice how they branch out of Root and are at the same level)
-3. Now both Flight and Customer branch out only once because they both have only one attribute
-4. Each of their attribute branches yet once again (==100 and ==silver) to signify that if we get such thing as Customer.account_status we should test that such status is indeed "silver)
-5. Those last two nodes both join exactly one new anonymous node that we haven't seen before: the Join node
-6. The Join node branches out only once pointing at the right hand side of the rule (aka production node)
+This structure of the graph allows us to represent and process complex relationships and conditions within our network.
+
 
 
 ## What are join nodes?
 
-Join nodes are also what is called "beta memory" in the original C. Forgy paper. To make it simple we can assert that they group together a set of conditions that need to be true in order for a rule to fire. In our last example the rule is:
+Join nodes are also what is called "beta memory" in the original C. Forgy paper. To make it simple we can assert that they group together a set of conditions that need to be true in order for a rule to fire. In our last example, the rule is:
 
 ```
 # pseudocode
@@ -126,13 +128,16 @@ given: Flight.miles == 100 and Customer.account_status == "silver"
 then: Discount.code == 50
 ```
 
-The `Join` node in the graph represent the `AND` in the `given` and we will see shortly how it is used. One thing to notice is that the `Join` node has and will only be able to have only 2 parents (incoming edges) and this is very important.
+In the graph representation, the Join node corresponds to the "and" in the "given" part of the rule. Its purpose is to evaluate and combine the conditions associated with its two parent nodes. Notably, a Join node can only have and will always have exactly two parents (incoming edges), which is a crucial characteristic of its design.
+
+By utilizing Join nodes, the network is able to effectively represent complex conditions and evaluate them in order to trigger the corresponding rules.
 
 
 ## What are production nodes?
 
-Production nodes are named after their original name in the Forgy paper and they are simply the right hand side of a rule (a `given`). They are only always connected to 1 incoming Join node.
+Production nodes, as named in the Forgy paper, refer to the right-hand side of a rule (also known as the "given" part). These nodes are exclusively connected to one incoming Join node in the network.
 
+To clarify, the purpose of a production node is to represent the actions or outcomes specified by the rule. It captures the consequences that should occur when the conditions specified in the Join node's associated "given" part are met. This relationship ensures that the rule's right-hand side is only triggered when the conditions of the Join node are satisfied.
 
 ## How do we use all of that after we built the network?
 
