@@ -1,9 +1,3 @@
-Mix.install([
-  {:retex, path: "./"},
-  {:duration, "~> 0.1.0"},
-  {:timex, "~> 3.7.6"}
-])
-
 defmodule Benchmark do
   alias Retex.Agenda
 
