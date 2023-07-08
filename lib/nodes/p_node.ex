@@ -6,6 +6,8 @@ defmodule Retex.Node.PNode do
 
   defstruct action: nil, id: nil, raw_action: nil, bindings: %{}, filters: []
 
+  @type t() :: %__MODULE__{}
+
   def new(action, filters \\ []) do
     item = %__MODULE__{action: action, raw_action: action, filters: filters}
     %{item | id: Retex.hash(item)}
