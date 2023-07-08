@@ -4,7 +4,6 @@
 
 # The Rete Algorithm
 
-
 "The Rete Match Algorithm is an efficient method for comparing a large collection of patterns to a large collection of objects. It finds all the objects that match each pattern. The algorithm was developed for use in production system interpreters, and it has been used for systems containing from a few hundred to more than a thousand patterns and objects" - C. Forgy
 
 **Boilerplate/PoC of a version of the Rete Algorithm implementated in Elixir**
@@ -16,10 +15,9 @@ Rete is a complex stateful algorithm, this is an attempt of reproducing it with 
 - Erlang/OTP 24
 - Elixir 1.14.2 (compiled with Erlang/OTP 22)
 
-
 ## How does it work?
 
-The algorithm utilizes symbols to create an internal representation of the world. Each element in the real world is converted into a triple known as a "Working Memory Element" (WME), represented as {Entity, attribute, attribute_value}.
+The algorithm utilizes symbols to create an internal representation of the world. Each element in the real world is converted into a triple known as a "Working Memory Element" (`Retex.Wme.t()`), represented as {Entity, attribute, attribute_value}.
 
 The world is represented through facts (WMEs) and Rules. A Rule consists of two essential parts: the "given" (right side) and the "then" (left side).
 
@@ -36,8 +34,9 @@ Now, let's explore how this would appear when compiling the rete algorithm with 
     3108351631 --> 3860425667
     3860425667 --> 3895425755
     3895425755 --> 2332826675
- ```
- **example nr. 1**
+```
+
+**example nr. 1**
 
 Now, let's examine the graph, which consists of four nodes in the following order:
 
@@ -48,8 +47,7 @@ Now, let's examine the graph, which consists of four nodes in the following orde
 3. The account_status node
    1. Referred to as a Select node, it represents the attribute name of the entity being described.
 4. the ==silver node
-   1. Known as a Test node, it includes the == symbol, indicating that the value of Customer.account_status is checked against "silver" as a literal string (tests can use all Elixir comparison symbols). 
-
+   1. Known as a Test node, it includes the == symbol, indicating that the value of Customer.account_status is checked against "silver" as a literal string (tests can use all Elixir comparison symbols).
 
 By expanding this network, we can continue mapping various aspects of the real world using any desired triple. Let's consider the entity representing a Flight, specifically its number of miles. We can represent this as {Flight, miles, 100} to signify a flight with a mileage of 100. Now, let's incorporate this into our network and observe the resulting graph:
 
@@ -102,7 +100,6 @@ flowchart
     4112061991 --> 3801762854
 ```
 
-
 Now we have constructed our network, which possesses a symbolic representation of the world and describes the relationships between multiple entities and their values to trigger a rule. Notably, the last node in the graph is represented as {:Discount, :code, 50}.
 
 Let's examine how we can interpret this graph step by step:
@@ -115,8 +112,6 @@ Let's examine how we can interpret this graph step by step:
 6. The Join node branches out only once, leading to the right-hand side of the rule (also known as the production node).
 
 This structure of the graph allows us to represent and process complex relationships and conditions within our network.
-
-
 
 ## What are join nodes?
 
@@ -131,7 +126,6 @@ then: Discount.code == 50
 In the graph representation, the Join node corresponds to the "and" in the "given" part of the rule. Its purpose is to evaluate and combine the conditions associated with its two parent nodes. Notably, a Join node can only have and will always have exactly two parents (incoming edges), which is a crucial characteristic of its design.
 
 By utilizing Join nodes, the network is able to effectively represent complex conditions and evaluate them in order to trigger the corresponding rules.
-
 
 ## What are production nodes?
 
@@ -207,7 +201,6 @@ Let's see what happens when adding the following working memory element to the R
 After adding the WME `Retex.Wme.new(:Flight, :miles, 100)` the only active branches and nodes are d, i, f and a
 
 Our rule can't be activated because the parent node `Join` is not fully active yet and so it can't propagate the current WME to the production node (which is sad but fair)
-
 
 Let's see what happens when adding the following working memory element to the Retex algorithm `Retex.Wme.new(:Customer, :account_status, "silver")`
 
