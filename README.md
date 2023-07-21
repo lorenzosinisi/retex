@@ -241,6 +241,7 @@ end
 If you want you can have a predefined generic DSL and the wrapper NeuralBridge so that you don't have to build the rest of the Expert System from zero
 
 ```elixir
+# or visit https://neuralbridge.fly.dev <- an online playground to create rules and add facts
 def deps do
   [
     {:neural_bridge, git: "https://github.com/lorenzosinisi/neural_bridge"}
@@ -364,6 +365,7 @@ end
 
 - [Rete](https://cis.temple.edu/~giorgio/cis587/readings/rete.html)
 - [Retex at ElixirConf EU](https://www.youtube.com/watch?v=pvi5hURNzbk&ab_channel=CodeSync)
+- Retex is available as playground here: https://neuralbridge.fly.dev
 
 References:
 
