@@ -163,7 +163,8 @@ defmodule Retex do
   """
   @spec build_beta_network(Graph.t(), list(network_node())) :: {list(network_node()), Graph.t()}
   def build_beta_network(graph, [first, second | list]) do
-    beta_memory = Node.BetaMemory.new()
+    id = Retex.hash([first, second])
+    beta_memory = Node.BetaMemory.new(id)
 
     graph
     |> Graph.add_vertex(beta_memory)

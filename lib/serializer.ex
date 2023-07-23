@@ -72,7 +72,7 @@ defmodule Retex.Serializer do
     "Join"
   end
 
-  defp encode(%Retex.Node.PNode{id: id, action: action}) do
+  defp encode(%Retex.Node.PNode{id: _id, action: action}) do
     "#{inspect(action, pretty: true)}"
   end
 

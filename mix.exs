@@ -32,6 +32,19 @@ defmodule Retex.MixProject do
   defp description do
     """
     Rete algorithm in Elixir
+
+    The Rete algorithm is a powerful rule-based pattern matching algorithm commonly used in the
+    field of artificial intelligence and expert systems. It efficiently processes large sets of
+    rules and facts to infer conclusions and make decisions. Implementing the Rete algorithm provides
+    developers with a flexible and scalable solution
+    for rule-based systems. This package offers a set of abstractions and functions to define rules,
+    facts, and conditions, and efficiently match them against a working memory.
+
+    By leveraging the concurrent and distributed nature of the Elixir language, the Retex algorithm package
+    enables high-performance rule evaluation, making it suitable for real-time applications and systems
+    requiring complex decision-making logic. Whether used for business rules, event processing, or other
+    intelligent systems, this Elixir package empowers developers to implement rule-based functionality
+    with ease and harness the full potential of the Rete algorithm within their Elixir applications.
     """
   end
 
