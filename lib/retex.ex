@@ -163,7 +163,7 @@ defmodule Retex do
   """
   @spec build_beta_network(Graph.t(), list(network_node())) :: {list(network_node()), Graph.t()}
   def build_beta_network(graph, [first, second | list]) do
-    id = Retex.hash([first, second])
+    id = Retex.hash(Enum.sort([first, second]))
     beta_memory = Node.BetaMemory.new(id)
 
     graph
