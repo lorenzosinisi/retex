@@ -25,8 +25,44 @@ defmodule RetexTest do
 
     network = Retex.add_production(Retex.new(), rule)
 
-    {:ok, graph} = Retex.Serializer.serialize(network.graph)
-    IO.puts(graph)
+    assert {:ok, _graph} = Retex.Serializer.serialize(network.graph)
+  end
+
+  test "adds the same rules twice" do
+    given = [
+      has_attribute(:Account, :status, :==, "silver"),
+      has_attribute(:Account, :status, :!=, "outdated"),
+      has_attribute(:Flight, :partner, :!=, true)
+    ]
+
+    action = [
+      {:concession, 50}
+    ]
+
+    rule = create_rule(lhs: given, rhs: action)
+
+    given_b = [
+      has_attribute(:Account, :status, :==, "silver"),
+      has_attribute(:Account, :status, :!=, "outdated"),
+      has_attribute(:Family, :size, :>=, 12),
+      has_attribute(:Flight, :partner, :!=, true)
+    ]
+
+    action_b = [
+      {:concession, 110}
+    ]
+
+    rule_b = create_rule(lhs: given_b, rhs: action_b)
+
+    network =
+      Retex.new()
+      |> Retex.add_production(rule)
+      |> Retex.add_production(rule)
+      |> Retex.add_production(rule_b)
+      |> Retex.add_production(rule_b)
+
+    assert 22 == Graph.edges(network.graph) |> Enum.count()
+    assert 18 == Graph.vertices(network.graph) |> Enum.count()
   end
 
   test "add a production with existing attributes" do
