@@ -1,7 +1,7 @@
 defmodule Retex.MixProject do
   use Mix.Project
   @source_url "https://github.com/lorenzosinisi/retex"
-  @version "0.1.11"
+  @version "0.1.12"
 
   def project do
     [
