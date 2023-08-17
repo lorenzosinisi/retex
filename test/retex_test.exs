@@ -739,7 +739,6 @@ defmodule RetexTest do
       agenda = network.agenda |> Enum.map(&Map.get(&1, :action)) |> Enum.sort()
 
       assert agenda == [
-               [{:Flight, :account_status, 10}],
                [{:Flight, :account_status, :silver}],
                [{:Flight, :account_status_a, 10}]
              ]
