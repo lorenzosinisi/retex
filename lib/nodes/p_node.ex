@@ -31,12 +31,8 @@ defmodule Retex.Node.PNode do
       tokens = Map.get(tokens, parent.id)
 
       if Enum.all?(parents, &Map.get(activations, &1.id)) do
-        productions =
-          tokens
-          |> Enum.map(fn token -> Retex.replace_bindings(neighbor, token.bindings) end)
-          |> List.flatten()
-          |> Enum.uniq()
-          |> apply_filters(filters)
+        bindings = tokens |> Enum.reduce(%{}, fn t, acc -> Map.merge(acc, t.bindings) end)
+        productions = apply_filters([Retex.replace_bindings(neighbor, bindings)], filters)
 
         new_rete = %{
           rete

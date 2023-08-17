@@ -11,11 +11,11 @@ defmodule Retex.Token do
   tokens that instantiate the LHS. The terminal node sends out of the black box
   the information that the conflict set must be changed. - RETE Match Algorithm - Forgy OCR
   """
-  defstruct wmem: nil, node: nil, bindings: %{}, id: nil
+  defstruct wmem: nil, node: nil, bindings: %{}
 
   @type t() :: %Retex.Token{}
 
   def new do
-    Map.put(%__MODULE__{}, :id, Retex.hash(:uuid4))
+    %__MODULE__{}
   end
 end
