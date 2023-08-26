@@ -11,6 +11,26 @@ defmodule RetexTest do
     }
   end
 
+  test "create a very simple rule of one condition and one branch" do
+    rete = Retex.new()
+
+    given = [
+      isa("$thing", :Thing)
+    ]
+
+    action = [
+      {:Discount, :code, 50}
+    ]
+
+    rule = create_rule(lhs: given, rhs: action)
+
+    network = Retex.add_production(rete, rule)
+
+    Retex.add_wme(network, Retex.Wme.new(:Thing, :status, :silver))
+
+    assert {:ok, _graph} = Retex.Serializer.serialize(network.graph)
+  end
+
   test "create a very simple rule of one condition" do
     given = [
       has_attribute(:Customer, :account_status, :==, "silver"),

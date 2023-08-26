@@ -60,7 +60,8 @@ defmodule Retex.Node.Test do
     end
 
     @spec active?(%{id: any}, Retex.t()) :: boolean()
-    def active?(%{id: id}, %Retex{activations: activations}) do
+    def active?(%{id: id}, %Retex{id: network_id, activations: activations}) do
+      activations = Retex.get(network_id, :activations)
       Enum.any?(Map.get(activations, id, []))
     end
   end

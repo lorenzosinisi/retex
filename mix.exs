@@ -61,7 +61,8 @@ defmodule Retex.MixProject do
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:excoveralls, "~> 0.10", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:sobelow, "~> 0.7", only: [:dev, :test], runtime: false}
+      {:sobelow, "~> 0.7", only: [:dev, :test], runtime: false},
+      {:deep_merge, "~> 1.0"}
     ]
   end
 
@@ -110,7 +111,7 @@ defmodule Retex.MixProject do
 
   defp aliases do
     [
-      test: [
+      test_and_format: [
         "format",
         "coveralls",
         "credo",

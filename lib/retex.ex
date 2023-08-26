@@ -53,6 +53,8 @@ defmodule Retex do
   # the Retex network is made of the following elements:
   defstruct graph: Graph.new(),
             wmes: %{},
+            id: nil,
+            concurrent: false,
             agenda: [],
             activations: %{},
             wme_activations: %{},
@@ -68,11 +70,39 @@ defmodule Retex do
   def root_vertex, do: Retex.Root.new()
 
   @doc @moduledoc
-  @spec new :: Retex.t()
-  def new do
-    %{graph: graph} = %Retex{}
+  @spec new(String.t()) :: Retex.t()
+  def new(id \\ UUIDTools.uuid4(), opts \\ []) do
+    :ets.new(String.to_atom(id), [:set, :protected, :named_table])
+    %{graph: graph} = %Retex{id: id, concurrent: true}
     graph = Graph.add_vertex(graph, Retex.Root.new())
-    %Retex{graph: graph}
+    %Retex{graph: graph, id: id, concurrent: true}
+  end
+
+  def get(id, key, default \\ %{}) do
+    IO.inspect({:get, key})
+
+    case :ets.lookup(String.to_atom(id), key) do
+      [value] ->
+        value
+
+      [] ->
+        default
+    end
+  end
+
+  def put(id, key, value) when is_binary(id) do
+    IO.inspect({key, value})
+
+    value =
+      case :ets.lookup(String.to_atom(id), key) do
+        [{^key, activations}] when is_map(value) ->
+          IO.inspect(DeepMerge.deep_merge(activations, value), label: key)
+
+        [] ->
+          value
+      end
+
+    :ets.insert(String.to_atom(id), {key, value})
   end
 
   @doc """
@@ -230,6 +260,33 @@ defmodule Retex do
 
   @spec add_token(Retex.t(), network_node(), Retex.Wme.t(), map, list(Retex.Token.t())) ::
           Retex.t()
+
+  def add_token(
+        %Retex{tokens: _rete_tokens, concurrent: true} = rete,
+        current_node,
+        _wme,
+        _bindings,
+        [_ | _] = tokens
+      ) do
+    rete_tokens = get(rete.id, :tokens)
+
+    node_tokens =
+      rete_tokens
+      |> Map.get(current_node.id, [])
+      |> MapSet.new()
+
+    all_tokens =
+      node_tokens
+      |> MapSet.new()
+      |> MapSet.union(MapSet.new(tokens))
+
+    new_tokens = Map.put(rete_tokens, current_node.id, all_tokens)
+
+    put(rete.id, :tokens, new_tokens)
+
+    %{rete | tokens: new_tokens}
+  end
+
   def add_token(
         %Retex{tokens: rete_tokens} = rete,
         current_node,
@@ -248,6 +305,8 @@ defmodule Retex do
       |> MapSet.union(MapSet.new(tokens))
 
     new_tokens = Map.put(rete_tokens, current_node.id, all_tokens)
+
+    put(rete.id, :tokens, new_tokens)
 
     %{rete | tokens: new_tokens}
   end
@@ -274,6 +333,9 @@ defmodule Retex do
       |> MapSet.union(MapSet.new(tokens))
 
     new_tokens = Map.put(rete_tokens, current_node.id, all_tokens)
+
+    put(rete.id, :tokens, new_tokens)
+
     %{rete | tokens: new_tokens}
   end
 
@@ -291,6 +353,7 @@ defmodule Retex do
     new_wme_activations =
       Map.put(wme_activations, wme.id, [current_node.id | previous_wme_activations])
 
+    put(rete.id, :wme_activations, new_wme_activations)
     %{new_rete | wme_activations: new_wme_activations}
   end
 
@@ -345,6 +408,7 @@ defmodule Retex do
           | agenda: Enum.reject(network.agenda, fn pnode -> pnode.id == vertex.id end)
         }
       else
+        put(rete.id, :activations, Map.put(activations, vertex.id, []))
         new_network = %{network | activations: Map.put(activations, vertex.id, [])}
         deactivate_descendants(new_network, vertex)
       end
